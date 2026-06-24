@@ -1,0 +1,443 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum PlaceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReportReason {
+  SPAM
+  INAPPROPRIATE
+  INCORRECT_INFO
+  DUPLICATE
+  OTHER
+}
+
+enum RedemptionStatus {
+  PENDING
+  APPROVED
+  SHIPPED
+  DELIVERED
+  REJECTED
+}
+
+model User {
+  id                  String    @id @default(cuid())
+  name                String?
+  username            String?   @unique
+  email               String    @unique
+  emailVerified       DateTime?
+  image               String?
+  password            String?
+  role                UserRole  @default(USER)
+  bio                 String?   @db.Text
+  isBanned            Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  accounts            Account[]
+  sessions            Session[]
+  places              Place[]
+  reviews             Review[]
+  favorites           Favorite[]
+  reports             Report[]
+  verificationTokens  VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+
+  stats               UserStats?
+  userBadges          UserBadge[]
+  coinTransactions    CoinTransaction[]
+  xpTransactions      XpTransaction[]
+  redemptions         RewardRedemption[]
+  dailyRewardCounts   DailyRewardCount[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expires   DateTime
+  userId    String?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expires   DateTime
+  userId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?  @db.Text
+  icon        String?
+  image       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  places Place[]
+
+  @@map("categories")
+}
+
+model Place {
+  id                String      @id @default(cuid())
+  title             String
+  slug              String      @unique
+  shortDescription  String      @db.Text
+  description       String      @db.Text
+  city              String
+  state             String
+  country           String
+  address           String?     @db.Text
+  latitude          Float?
+  longitude         Float?
+  bestTimeToVisit   String?     @db.Text
+  entryFee          String?
+  openingHours      String?     @db.Text
+  travelTips        String?     @db.Text
+  thingsToDo        String?     @db.Text
+  nearbyAttractions String?     @db.Text
+  featuredImage     String?
+  status            PlaceStatus @default(PENDING)
+  averageRating     Float       @default(0)
+  views             Int         @default(0)
+  isFeatured        Boolean     @default(false)
+  isHiddenGem       Boolean     @default(false)
+  rewardGiven       Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  userId     String
+  categoryId String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+
+  images    PlaceImage[]
+  reviews   Review[]
+  favorites Favorite[]
+  reports   Report[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@map("places")
+}
+
+model PlaceImage {
+  id        String   @id @default(cuid())
+  url       String
+  publicId  String?
+  alt       String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  placeId String
+  place   Place  @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([placeId])
+  @@map("place_images")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  rating     Int
+  title      String?
+  body       String   @db.Text
+  likesCount Int      @default(0)
+  rewardGiven Boolean @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  userId  String
+  placeId String
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place  Place         @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  images ReviewImage[]
+
+  @@unique([userId, placeId])
+  @@index([placeId])
+  @@map("reviews")
+}
+
+model ReviewImage {
+  id        String   @id @default(cuid())
+  url       String
+  alt       String?
+  createdAt DateTime @default(now())
+
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@map("review_images")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId  String
+  placeId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+  @@index([placeId])
+  @@map("favorites")
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  ipHash    String
+  device    String   @default("desktop")
+  country   String?
+  referrer  String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+  @@index([ipHash])
+  @@map("page_views")
+}
+
+model Report {
+  id        String       @id @default(cuid())
+  reason    ReportReason
+  details   String?      @db.Text
+  resolved  Boolean      @default(false)
+  createdAt DateTime     @default(now())
+
+  userId  String
+  placeId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([placeId])
+  @@map("reports")
+}
+
+// ─── Gamification ──────────────────────────────────────────────────────────
+
+model UserStats {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  xp            Int       @default(0)
+  coins         Int       @default(0)
+  level         Int       @default(1)
+  totalXp       Int       @default(0)
+  streak        Int       @default(0)
+  longestStreak Int       @default(0)
+  lastLoginDate DateTime?
+
+  approvedPlaces Int @default(0)
+  totalReviews   Int @default(0)
+  totalPhotos    Int @default(0)
+  totalLikes     Int @default(0)
+  hiddenGems     Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String   @db.Text
+  icon        String
+  type        String
+  rarity      String   @default("COMMON")
+  createdAt   DateTime @default(now())
+
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+  @@map("user_badges")
+}
+
+model CoinTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  type        String
+  description String
+  referenceId String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("coin_transactions")
+}
+
+model XpTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  type        String
+  description String
+  referenceId String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("xp_transactions")
+}
+
+model Reward {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String   @db.Text
+  icon        String
+  coinCost    Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  redemptions RewardRedemption[]
+
+  @@map("rewards")
+}
+
+model RewardRedemption {
+  id         String @id @default(cuid())
+  userId     String
+  rewardId   String
+  coinsSpent Int
+
+  fullName String
+  email    String
+  phone    String
+
+  houseNumber   String?
+  streetAddress String
+  landmark      String?
+  area          String?
+  city          String
+  district      String?
+  state         String
+  country       String
+  postalCode    String
+
+  latitude              Float?
+  longitude             Float?
+  preferredDeliveryTime String?
+  deliveryInstructions  String?          @db.Text
+
+  status         RedemptionStatus @default(PENDING)
+  trackingNumber String?
+  adminNotes     String?          @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward Reward @relation(fields: [rewardId], references: [id])
+
+  @@index([userId])
+  @@index([rewardId])
+  @@map("reward_redemptions")
+}
+
+model DailyRewardCount {
+  id     String @id @default(cuid())
+  userId String
+  date   String
+  count  Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@map("daily_reward_counts")
+}
