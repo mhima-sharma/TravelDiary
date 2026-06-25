@@ -33,6 +33,10 @@ export const metadata: Metadata = {
     description: "Explore thousands of incredible travel destinations.",
     images: ["/og-image.jpg"],
   },
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
   robots: { index: true, follow: true },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
 };
