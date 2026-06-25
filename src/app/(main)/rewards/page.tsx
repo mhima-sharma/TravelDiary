@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getAvailableRewards } from "@/actions/rewards";
 import { getMyStats } from "@/actions/gamification";
@@ -17,7 +18,12 @@ type Reward = {
 };
 
 export default function RewardsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") router.replace("/login");
+  }, [status, router]);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [myStats, setMyStats] = useState<any>(null);
   const [selected, setSelected] = useState<Reward | null>(null);

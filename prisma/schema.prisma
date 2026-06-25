@@ -27,6 +27,17 @@ enum ReportReason {
   OTHER
 }
 
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum VisitStatus {
+  WANT_TO_VISIT
+  VISITED
+  VISITED_AGAIN
+}
+
 enum RedemptionStatus {
   PENDING
   APPROVED
@@ -55,8 +66,11 @@ model User {
   reviews             Review[]
   favorites           Favorite[]
   reports             Report[]
+  placeVisits         PlaceVisit[]
   verificationTokens  VerificationToken[]
   passwordResetTokens PasswordResetToken[]
+
+  posts               Post[]
 
   stats               UserStats?
   userBadges          UserBadge[]
@@ -176,10 +190,11 @@ model Place {
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   category Category @relation(fields: [categoryId], references: [id])
 
-  images    PlaceImage[]
-  reviews   Review[]
-  favorites Favorite[]
-  reports   Report[]
+  images      PlaceImage[]
+  reviews     Review[]
+  favorites   Favorite[]
+  reports     Report[]
+  placeVisits PlaceVisit[]
 
   @@index([userId])
   @@index([categoryId])
@@ -249,6 +264,56 @@ model Favorite {
   @@unique([userId, placeId])
   @@index([placeId])
   @@map("favorites")
+}
+
+model Advertisement {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  image       String?  @db.Text
+  linkUrl     String?  @db.Text
+  linkText    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("advertisements")
+}
+
+model Post {
+  id            String     @id @default(cuid())
+  title         String
+  slug          String     @unique
+  excerpt       String     @db.Text
+  content       String     @db.LongText
+  featuredImage String?
+  status        PostStatus @default(DRAFT)
+  publishedAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  @@index([authorId])
+  @@map("posts")
+}
+
+model PlaceVisit {
+  id        String      @id @default(cuid())
+  status    VisitStatus
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  userId  String
+  placeId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+  @@index([placeId])
+  @@map("place_visits")
 }
 
 model PageView {

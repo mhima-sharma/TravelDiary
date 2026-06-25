@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { db } from "@/lib/db";
 import { PlaceCard } from "@/components/shared/place-card";
 import { PlaceCardSkeleton } from "@/components/shared/place-card-skeleton";
+import { AdCard } from "@/components/shared/ad-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,7 @@ async function PlacesList({ searchParams }: { searchParams: SearchParams }) {
     sort === "popular" ? { views: "desc" as const } :
     { createdAt: "desc" as const };
 
-  const [places, total] = await Promise.all([
+  const [places, total, activeAds] = await Promise.all([
     db.place.findMany({
       where,
       orderBy,
@@ -56,17 +57,34 @@ async function PlacesList({ searchParams }: { searchParams: SearchParams }) {
       },
     }),
     db.place.count({ where }),
+    db.advertisement.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" } }),
   ]);
 
   if (places.length === 0) {
     return <EmptyState icon={Map} title="No places found" description="Try different search terms or filters." />;
   }
 
+  // Build interleaved grid: inject 1 ad after every 6 place cards
+  const AD_INTERVAL = 6;
+  const gridItems: Array<{ type: "place"; data: typeof places[0] } | { type: "ad"; data: typeof activeAds[0]; key: string }> = [];
+  let adIndex = 0;
+  places.forEach((place, i) => {
+    gridItems.push({ type: "place", data: place });
+    if (activeAds.length > 0 && (i + 1) % AD_INTERVAL === 0) {
+      gridItems.push({ type: "ad", data: activeAds[adIndex % activeAds.length], key: `ad-${i}` });
+      adIndex++;
+    }
+  });
+
   return (
     <div>
       <p className="text-sm text-muted-foreground mb-4">{total} places found</p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {places.map((p) => <PlaceCard key={p.id} place={p} />)}
+        {gridItems.map((item) =>
+          item.type === "place"
+            ? <PlaceCard key={item.data.id} place={item.data} />
+            : <AdCard key={item.key} {...item.data} />
+        )}
       </div>
       {total > take && (
         <div className="flex justify-center gap-2 mt-8">

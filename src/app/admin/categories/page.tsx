@@ -1,8 +1,9 @@
 import { db } from "@/lib/db";
-import { Trash2, FolderOpen } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 import type { Metadata } from "next";
 import { CategoryForm } from "./category-form";
 import { DeleteCategoryButton } from "./delete-category-button";
+import { EditCategoryImage } from "./edit-category-image";
 
 export const metadata: Metadata = { title: "Categories" };
 
@@ -40,7 +41,10 @@ export default async function AdminCategoriesPage() {
                   {cat.description && <p className="text-xs text-muted-foreground mt-0.5">{cat.description}</p>}
                 </div>
               </div>
-              <DeleteCategoryButton id={cat.id} name={cat.name} hasPlaces={cat._count.places > 0} />
+              <div className="flex items-center gap-1">
+                <EditCategoryImage id={cat.id} currentImage={cat.image} />
+                <DeleteCategoryButton id={cat.id} name={cat.name} hasPlaces={cat._count.places > 0} />
+              </div>
             </div>
           ))}
         </div>

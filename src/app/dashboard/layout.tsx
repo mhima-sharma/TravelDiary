@@ -1,13 +1,14 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { LayoutDashboard, MapPin, Heart, Star, User, Settings, ArrowLeft, Compass, Coins } from "lucide-react";
+import { LayoutDashboard, MapPin, Heart, Star, User, Settings, ArrowLeft, Compass, Coins, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/my-places", label: "My Places", icon: MapPin },
   { href: "/dashboard/favorites", label: "Favorites", icon: Heart },
+  { href: "/dashboard/bucket-list", label: "Bucket List", icon: Bookmark },
   { href: "/dashboard/reviews", label: "My Reviews", icon: Star },
   { href: "/dashboard/rewards", label: "Rewards", icon: Coins },
   { href: "/dashboard/profile", label: "Profile", icon: User },

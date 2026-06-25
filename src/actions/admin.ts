@@ -32,6 +32,14 @@ export async function unbanUser(userId: string) {
   return { success: "User unbanned" };
 }
 
+export async function updateCategoryImage(id: string, image: string) {
+  await requireAdmin();
+  await db.category.update({ where: { id }, data: { image: image || null } });
+  revalidatePath("/admin/categories");
+  revalidatePath("/categories");
+  return { success: "Image updated" };
+}
+
 export async function createCategory(values: z.infer<typeof CategorySchema>) {
   await requireAdmin();
   const parsed = CategorySchema.safeParse(values);

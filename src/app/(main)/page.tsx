@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Search, MapPin, Star, ArrowRight, Mountain, Waves, Landmark, TreePine, Droplets, Zap } from "lucide-react";
+import { Search, MapPin, ArrowRight, Mountain, Waves, Landmark, TreePine, Droplets, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlaceCard } from "@/components/shared/place-card";
 import { PlaceCardSkeleton } from "@/components/shared/place-card-skeleton";
+import { AdCard } from "@/components/shared/ad-card";
 import { db } from "@/lib/db";
 import { PlaceStatus } from "@prisma/client";
 
@@ -63,6 +63,28 @@ async function RecentPlaces() {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {places.map((place) => <PlaceCard key={place.id} place={place} />)}
     </div>
+  );
+}
+
+async function SponsoredSection() {
+  const ads = await db.advertisement.findMany({
+    where: { isActive: true },
+    orderBy: { createdAt: "desc" },
+  });
+  if (ads.length === 0) return null;
+
+  return (
+    <section className="py-14 container mx-auto px-4">
+      <div className="flex items-center gap-3 mb-6">
+        <h2 className="text-2xl font-bold">Sponsored</h2>
+        <span className="text-xs font-semibold uppercase tracking-widest bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Ad</span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {ads.map((ad) => (
+          <AdCard key={ad.id} {...ad} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -171,6 +193,11 @@ export default function HomePage() {
         </Suspense>
       </section>
 
+      {/* Sponsored Ads */}
+      <Suspense fallback={null}>
+        <SponsoredSection />
+      </Suspense>
+
       {/* CTA */}
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
@@ -182,7 +209,7 @@ export default function HomePage() {
             <Button size="lg" variant="secondary" asChild>
               <Link href="/places/new"><MapPin className="mr-2 h-5 w-5" />Add a Place</Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="border-white text-white hover:bg-white/10">
+            <Button size="lg" variant="outline" asChild className="border-white text-white bg-transparent hover:bg-white/10 hover:text-white">
               <Link href="/explore">Explore Places</Link>
             </Button>
           </div>
