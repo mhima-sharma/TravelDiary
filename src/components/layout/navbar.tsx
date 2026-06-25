@@ -15,7 +15,6 @@ const navLinks = [
   { href: "/explore", label: "Explore" },
   { href: "/categories", label: "Categories" },
   { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/rewards", label: "Rewards" },
   { href: "/guide", label: "Guide" },
   { href: "/about", label: "About" },
 ];
@@ -40,6 +39,11 @@ export function Navbar() {
                 {l.label}
               </Link>
             ))}
+            {session && (
+              <Link href="/rewards" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                Rewards
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -106,6 +110,7 @@ export function Navbar() {
             {session ? (
               <>
                 <Link href="/places/new" onClick={() => setMobileOpen(false)} className="block px-2 py-2 text-sm font-medium hover:text-primary">+ Add Place</Link>
+                <Link href="/rewards" onClick={() => setMobileOpen(false)} className="block px-2 py-2 text-sm font-medium hover:text-primary">Rewards</Link>
                 <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block px-2 py-2 text-sm font-medium hover:text-primary">Dashboard</Link>
                 <button onClick={() => signOut({ callbackUrl: "/" })} className="block px-2 py-2 text-sm font-medium text-destructive w-full text-left">Sign out</button>
               </>

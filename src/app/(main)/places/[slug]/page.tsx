@@ -20,6 +20,8 @@ import { FavoriteButton } from "@/components/places/favorite-button";
 import { ReviewSection } from "@/components/places/review-section";
 import { ShareButton } from "@/components/places/share-button";
 import { ReportButton } from "@/components/places/report-button";
+import { VisitButton } from "@/components/places/visit-button";
+import { getUserVisitStatus } from "@/actions/visits";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -39,6 +41,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     },
     twitter: { card: "summary_large_image", title: place.title, description: place.shortDescription },
   };
+}
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 export default async function PlaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -66,20 +80,53 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
 
   await incrementViews(place.id);
 
-  const similarPlaces = await db.place.findMany({
-    where: { categoryId: place.categoryId, status: PlaceStatus.APPROVED, id: { not: place.id } },
-    take: 3,
-    include: {
-      category: { select: { name: true, slug: true, icon: true } },
-      user: { select: { id: true, name: true, image: true } },
-      images: { select: { id: true, url: true, alt: true }, take: 1 },
-      _count: { select: { reviews: true, favorites: true } },
-    },
-  });
+  const placeInclude = {
+    category: { select: { name: true, slug: true, icon: true } },
+    user: { select: { id: true, name: true, image: true } },
+    images: { select: { id: true, url: true, alt: true }, take: 1 },
+    _count: { select: { reviews: true, favorites: true } },
+  };
 
-  const userFavorite = session ? await db.favorite.findUnique({
-    where: { userId_placeId: { userId: session.user.id, placeId: place.id } },
-  }) : null;
+  const [similarPlaces, nearbyRaw, userFavorite, userVisitStatus] = await Promise.all([
+    db.place.findMany({
+      where: { categoryId: place.categoryId, status: PlaceStatus.APPROVED, id: { not: place.id } },
+      take: 3,
+      include: placeInclude,
+    }),
+    db.place.findMany({
+      where: { state: place.state, status: PlaceStatus.APPROVED, id: { not: place.id } },
+      take: 20,
+      include: placeInclude,
+      orderBy: { averageRating: "desc" },
+    }),
+    session ? db.favorite.findUnique({
+      where: { userId_placeId: { userId: session.user.id, placeId: place.id } },
+    }) : null,
+    session ? getUserVisitStatus(place.id) : null,
+  ]);
+
+  const nearbyPlaces = (() => {
+    if (place.latitude && place.longitude) {
+      return nearbyRaw
+        .map((p) => ({
+          ...p,
+          _dist:
+            p.latitude != null && p.longitude != null
+              ? haversineKm(place.latitude!, place.longitude!, p.latitude, p.longitude)
+              : Infinity,
+        }))
+        .sort((a, b) => a._dist - b._dist)
+        .slice(0, 4);
+    }
+    return [...nearbyRaw]
+      .sort((a, b) => {
+        const aCity = a.city === place.city ? 0 : 1;
+        const bCity = b.city === place.city ? 0 : 1;
+        if (aCity !== bCity) return aCity - bCity;
+        return b.averageRating - a.averageRating;
+      })
+      .slice(0, 4);
+  })();
 
   const userReview = session ? place.reviews.find((r) => r.userId === session.user.id) : null;
 
@@ -128,6 +175,7 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
                   <h1 className="text-3xl md:text-4xl font-bold">{place.title}</h1>
                 </div>
                 <div className="flex items-center gap-2">
+                  {session && <VisitButton placeId={place.id} initialStatus={userVisitStatus} />}
                   {session && <FavoriteButton placeId={place.id} initialSaved={!!userFavorite} />}
                   <ShareButton />
                   {session && <ReportButton placeId={place.id} />}
@@ -278,9 +326,25 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
           </div>
         </div>
 
+        {/* Nearby Places */}
+        {nearbyPlaces.length > 0 && (
+          <div className="mt-16">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              <h2 className="text-2xl font-bold">Nearby Places</h2>
+            </div>
+            <p className="text-muted-foreground mb-6 text-sm">
+              More places to explore in {place.state}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {nearbyPlaces.map((p) => <PlaceCard key={p.id} place={p} />)}
+            </div>
+          </div>
+        )}
+
         {/* Similar Places */}
         {similarPlaces.length > 0 && (
-          <div className="mt-16">
+          <div className="mt-12">
             <h2 className="text-2xl font-bold mb-6">Similar Places</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {similarPlaces.map((p) => <PlaceCard key={p.id} place={p} />)}

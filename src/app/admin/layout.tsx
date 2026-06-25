@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { LayoutDashboard, Users, MapPin, FolderOpen, Star, Flag, Shield, BarChart3, Gift } from "lucide-react";
+import { LayoutDashboard, Users, MapPin, FolderOpen, Star, Flag, Shield, BarChart3, Gift, Megaphone } from "lucide-react";
 
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -12,6 +12,7 @@ const links = [
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/reports", label: "Reports", icon: Flag },
   { href: "/admin/rewards", label: "Rewards", icon: Gift },
+  { href: "/admin/ads", label: "Ads", icon: Megaphone },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -60,6 +60,10 @@ export function CategoryForm() {
             <Input placeholder="e.g. 💧" {...register("icon")} />
           </div>
           <div className="space-y-1">
+            <Label>Image URL</Label>
+            <Input placeholder="https://images.unsplash.com/..." {...register("image")} />
+          </div>
+          <div className="space-y-1">
             <Label>Description</Label>
             <Textarea placeholder="Short description…" rows={2} {...register("description")} />
           </div>

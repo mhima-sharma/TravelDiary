@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { db } from "@/lib/db";
 import { PlaceStatus } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,8 +31,20 @@ export default async function CategoriesPage() {
         {categories.map((cat) => (
           <Link key={cat.id} href={`/categories/${cat.slug}`}>
             <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
-              <div className="relative h-40 bg-gradient-to-br from-primary/10 to-primary/30 flex items-center justify-center">
-                <span className="text-6xl">{cat.icon || "🗺️"}</span>
+              <div className="relative h-44 overflow-hidden">
+                {cat.image ? (
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/30 flex items-center justify-center">
+                    <span className="text-6xl">{cat.icon || "🗺️"}</span>
+                  </div>
+                )}
               </div>
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">

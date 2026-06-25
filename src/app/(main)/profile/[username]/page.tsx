@@ -2,13 +2,14 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getUserProfileData } from "@/actions/gamification";
+import { getUserVisitStats, getUserBucketList } from "@/actions/visits";
 import { LevelProgress } from "@/components/gamification/level-progress";
 import { BadgeCard } from "@/components/gamification/badge-card";
 import { StatsOverview } from "@/components/gamification/stats-overview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, CalendarDays, Star, Trophy } from "lucide-react";
+import { MapPin, CalendarDays, Star, Trophy, Globe, Bookmark } from "lucide-react";
 
 export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
@@ -22,7 +23,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   const data = await getUserProfileData(username);
   if (!data) notFound();
 
-  const { user, stats, userBadges, approvedPlaces, progress, levelData, leaderboardRank } = data;
+  const { user, stats, userBadges, approvedPlaces, levelData, leaderboardRank } = data;
+
+  const [visitStats, bucketList] = await Promise.all([
+    getUserVisitStats(username),
+    getUserBucketList(username),
+  ]);
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-5xl">
@@ -86,10 +92,33 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
         </div>
       )}
 
+      {/* Travel Stats */}
+      {visitStats && (visitStats.placesVisited > 0 || visitStats.wantToVisitCount > 0) && (
+        <div className="mb-8">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Travel Stats</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: "Places Visited", value: visitStats.placesVisited, emoji: "📍" },
+              { label: "Countries Explored", value: visitStats.countriesExplored, emoji: "🌍" },
+              { label: "States Explored", value: visitStats.statesExplored, emoji: "🗺️" },
+              { label: "Bucket List", value: visitStats.wantToVisitCount, emoji: "🔖" },
+            ].map((s) => (
+              <Card key={s.label} className="text-center">
+                <CardContent className="py-4">
+                  <p className="text-2xl font-bold">{s.emoji} {s.value}</p>
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
       <Tabs defaultValue="contributions">
         <TabsList className="mb-6">
           <TabsTrigger value="contributions">Contributions</TabsTrigger>
           <TabsTrigger value="badges">Badges ({userBadges.length})</TabsTrigger>
+          {bucketList.length > 0 && <TabsTrigger value="bucket-list">Bucket List ({bucketList.length})</TabsTrigger>}
           {stats && <TabsTrigger value="stats">Stats</TabsTrigger>}
         </TabsList>
 
@@ -111,6 +140,44 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                     )}
                     <CardContent className="p-3">
                       <p className="font-semibold text-sm line-clamp-1">{place.title}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />{place.city}, {place.state}
+                      </p>
+                      {place.averageRating > 0 && (
+                        <p className="text-xs flex items-center gap-1 mt-1">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          {place.averageRating.toFixed(1)}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="bucket-list">
+          {bucketList.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <Globe className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <p>No places in bucket list yet.</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {bucketList.map((place) => (
+                <Link href={`/places/${place.slug}`} key={place.id}>
+                  <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
+                    {place.featuredImage && (
+                      <div className="relative h-36 w-full">
+                        <Image src={place.featuredImage} alt={place.title} fill className="object-cover" />
+                      </div>
+                    )}
+                    <CardContent className="p-3">
+                      <div className="flex items-start justify-between gap-1">
+                        <p className="font-semibold text-sm line-clamp-1">{place.title}</p>
+                        <Bookmark className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
+                      </div>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         <MapPin className="h-3 w-3" />{place.city}, {place.state}
                       </p>
