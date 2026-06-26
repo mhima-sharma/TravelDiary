@@ -1,5 +1,12 @@
 import { Suspense } from "react";
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
+
+const getCategories = unstable_cache(
+  () => db.category.findMany({ orderBy: { name: "asc" } }),
+  ["categories"],
+  { revalidate: 3600, tags: ["categories"] }
+);
 import { PlaceCard } from "@/components/shared/place-card";
 import { PlaceCardSkeleton } from "@/components/shared/place-card-skeleton";
 import { AdCard } from "@/components/shared/ad-card";
@@ -106,7 +113,7 @@ async function PlacesList({ searchParams }: { searchParams: SearchParams }) {
 
 export default async function ExplorePage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
-  const categories = await db.category.findMany({ orderBy: { name: "asc" } });
+  const categories = await getCategories();
 
   return (
     <div className="container mx-auto px-4 py-8">

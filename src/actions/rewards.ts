@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { RedemptionSchema } from "@/schemas";
 import { deductCoins } from "@/lib/gamification";
+import { notifyRewardRedeemed } from "@/lib/telegram";
 
 // ─── User: submit redemption ──────────────────────────────────────────────────
 
@@ -40,6 +41,16 @@ export async function redeemReward(values: z.infer<typeof RedemptionSchema>) {
 
   revalidatePath("/dashboard/rewards");
   revalidatePath("/rewards");
+
+  notifyRewardRedeemed(
+    reward.name,
+    reward.coinCost,
+    session.user.name ?? "Unknown",
+    session.user.email ?? "",
+    delivery.city,
+    delivery.state
+  );
+
   return { success: "Reward redeemed! We'll process your request shortly.", redemptionId: redemption.id };
 }
 

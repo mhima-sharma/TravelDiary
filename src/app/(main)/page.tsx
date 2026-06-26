@@ -1,13 +1,21 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, MapPin, ArrowRight, Mountain, Waves, Landmark, TreePine, Droplets, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlaceCard } from "@/components/shared/place-card";
 import { PlaceCardSkeleton } from "@/components/shared/place-card-skeleton";
 import { AdCard } from "@/components/shared/ad-card";
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 import { PlaceStatus } from "@prisma/client";
+
+const getActiveAds = unstable_cache(
+  () => db.advertisement.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" } }),
+  ["active-ads"],
+  { revalidate: 300, tags: ["ads"] }
+);
 
 const categories = [
   { name: "Hill Stations", slug: "hill-stations", icon: Mountain, color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" },
@@ -67,10 +75,7 @@ async function RecentPlaces() {
 }
 
 async function SponsoredSection() {
-  const ads = await db.advertisement.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const ads = await getActiveAds();
   if (ads.length === 0) return null;
 
   return (
@@ -93,7 +98,14 @@ export default function HomePage() {
     <div>
       {/* Hero */}
       <section className="relative min-h-[600px] flex items-center justify-center bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920')] bg-cover bg-center opacity-20" />
+        <Image
+          src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920"
+          alt=""
+          fill
+          priority
+          className="object-cover opacity-20"
+          sizes="100vw"
+        />
         <div className="relative z-10 container mx-auto px-4 text-center py-20">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
             Discover Your Next<br />

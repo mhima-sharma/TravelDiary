@@ -198,6 +198,10 @@ model Place {
 
   @@index([userId])
   @@index([categoryId])
+  @@index([status])
+  @@index([status, averageRating])
+  @@index([status, views])
+  @@index([status, createdAt])
   @@map("places")
 }
 
@@ -328,6 +332,7 @@ model PageView {
   @@index([path])
   @@index([createdAt])
   @@index([ipHash])
+  @@index([createdAt, ipHash])
   @@map("page_views")
 }
 
