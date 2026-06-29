@@ -60,9 +60,13 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  const isProd = process.env.NODE_ENV === "production";
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    // NextAuth v5 changed the cookie name from next-auth.* to authjs.*
+    cookieName: isProd ? "__Secure-authjs.session-token" : "authjs.session-token",
+    secureCookie: isProd,
   });
 
   const isLoggedIn = !!token;
