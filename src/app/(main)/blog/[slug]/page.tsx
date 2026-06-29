@@ -10,11 +10,16 @@ import type { Metadata } from "next";
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const posts = await db.post.findMany({
-    where: { status: PostStatus.PUBLISHED },
-    select: { slug: true },
-  });
-  return posts.map((p) => ({ slug: p.slug }));
+  try {
+    const posts = await db.post.findMany({
+      where: { status: PostStatus.PUBLISHED },
+      select: { slug: true },
+    });
+    return posts.map((p) => ({ slug: p.slug }));
+  } catch {
+    // DB unreachable at build time — pages will be rendered on first request via ISR
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

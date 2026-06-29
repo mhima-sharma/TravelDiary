@@ -18,7 +18,7 @@ const securityHeaders = [
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com https://images.unsplash.com",
       "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com",
-      "frame-src 'none'",
+      "frame-src https://maps.google.com https://www.google.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
