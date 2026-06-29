@@ -1,7 +1,9 @@
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 import { NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/explore", "/about", "/contact"];
+const { auth } = NextAuth(authConfig);
+
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/verify-email", "/reset-password"];
 const PROTECTED_PREFIXES = ["/dashboard", "/places/new", "/places/edit"];
 const ADMIN_PREFIXES = ["/admin"];
