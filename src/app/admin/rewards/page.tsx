@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { adminGetRedemptions, getRewardMetrics, adminUpdateRedemptionStatus } from "@/actions/rewards";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { adminGetRedemptions, getRewardMetrics } from "@/actions/rewards";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, Truck, CheckCircle2, XCircle, Clock, Users, Copy } from "lucide-react";
+import { Package, Truck, CheckCircle2, Clock } from "lucide-react";
 import { RedemptionActionsClient } from "./redemption-actions";
 
 export const dynamic = "force-dynamic";
@@ -93,26 +92,28 @@ export default async function AdminRewardsPage() {
       <h1 className="text-2xl font-bold">Reward Redemptions</h1>
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 md:gap-3">
         {metricCards.map((m) => (
           <Card key={m.label}>
-            <CardContent className="p-4">
-              <m.icon className="h-5 w-5 text-muted-foreground mb-2" />
-              <p className="text-2xl font-bold">{m.value}</p>
-              <p className="text-xs text-muted-foreground">{m.label}</p>
+            <CardContent className="p-3 md:p-4">
+              <m.icon className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground mb-1.5" />
+              <p className="text-xl md:text-2xl font-bold">{m.value}</p>
+              <p className="text-xs text-muted-foreground leading-tight">{m.label}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <Tabs defaultValue="all">
-        <TabsList>
-          <TabsTrigger value="all">All ({redemptions.length})</TabsTrigger>
-          <TabsTrigger value="PENDING">Pending ({metrics?.pending ?? 0})</TabsTrigger>
-          <TabsTrigger value="APPROVED">Approved ({metrics?.approved ?? 0})</TabsTrigger>
-          <TabsTrigger value="SHIPPED">Shipped ({metrics?.shipped ?? 0})</TabsTrigger>
-          <TabsTrigger value="DELIVERED">Delivered ({metrics?.delivered ?? 0})</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-1">
+          <TabsList className="w-max">
+            <TabsTrigger value="all">All ({redemptions.length})</TabsTrigger>
+            <TabsTrigger value="PENDING">Pending ({metrics?.pending ?? 0})</TabsTrigger>
+            <TabsTrigger value="APPROVED">Approved ({metrics?.approved ?? 0})</TabsTrigger>
+            <TabsTrigger value="SHIPPED">Shipped ({metrics?.shipped ?? 0})</TabsTrigger>
+            <TabsTrigger value="DELIVERED">Delivered ({metrics?.delivered ?? 0})</TabsTrigger>
+          </TabsList>
+        </div>
 
         {["all", "PENDING", "APPROVED", "SHIPPED", "DELIVERED"].map((tab) => (
           <TabsContent key={tab} value={tab} className="pt-4">
