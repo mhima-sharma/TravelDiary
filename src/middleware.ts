@@ -1,16 +1,19 @@
-import NextAuth from "next-auth";
-import { authConfig } from "@/lib/auth.config";
+import { getToken } from "next-auth/jwt";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-
-const { auth } = NextAuth(authConfig);
 
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/verify-email", "/reset-password"];
 const PROTECTED_PREFIXES = ["/dashboard", "/places/new", "/places/edit"];
 const ADMIN_PREFIXES = ["/admin"];
 
-export default auth((req) => {
-  const { nextUrl, auth: session } = req;
-  const isLoggedIn = !!session;
+export async function middleware(req: NextRequest) {
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET!,
+  });
+
+  const isLoggedIn = !!token;
+  const { nextUrl } = req;
 
   const isAuthRoute = AUTH_ROUTES.some((r) => nextUrl.pathname.startsWith(r));
   const isProtected = PROTECTED_PREFIXES.some((p) => nextUrl.pathname.startsWith(p));
@@ -26,12 +29,12 @@ export default auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isAdmin && session?.user?.role !== "ADMIN") {
+  if (isAdmin && token?.role !== "ADMIN") {
     return NextResponse.redirect(new URL("/", nextUrl));
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)"],
