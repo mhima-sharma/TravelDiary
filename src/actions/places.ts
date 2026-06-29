@@ -132,12 +132,16 @@ export async function submitReport(placeId: string, reason: string, details?: st
 
   const place = await db.place.findUnique({ where: { id: placeId }, select: { title: true } });
 
+  const sanitizedDetails = details
+    ? details.trim().slice(0, 1000).replace(/[<>]/g, "")
+    : null;
+
   await db.report.create({
     data: {
       placeId,
       userId: session.user.id,
       reason: reason as "SPAM" | "INAPPROPRIATE" | "INCORRECT_INFO" | "DUPLICATE" | "OTHER",
-      details: details || null,
+      details: sanitizedDetails,
     },
   });
 

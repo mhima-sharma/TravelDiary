@@ -1,5 +1,14 @@
 import nodemailer from "nodemailer";
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
@@ -41,10 +50,10 @@ export async function sendContactEmail(data: {
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto">
         <h2>New Contact Message</h2>
-        <p><strong>From:</strong> ${data.name} &lt;${data.email}&gt;</p>
-        <p><strong>Subject:</strong> ${data.subject}</p>
+        <p><strong>From:</strong> ${escapeHtml(data.name)} &lt;${escapeHtml(data.email)}&gt;</p>
+        <p><strong>Subject:</strong> ${escapeHtml(data.subject)}</p>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0"/>
-        <p style="white-space:pre-wrap">${data.message}</p>
+        <p style="white-space:pre-wrap">${escapeHtml(data.message)}</p>
       </div>
     `,
   });

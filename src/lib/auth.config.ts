@@ -6,5 +6,5 @@ export const authConfig = {
     error: "/login",
   },
   providers: [],
-  session: { strategy: "jwt" as const },
+  session: { strategy: "jwt" as const, maxAge: 24 * 60 * 60 },
 } satisfies NextAuthConfig;

@@ -5,10 +5,18 @@ export const LoginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+const strongPassword = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character");
+
 export const RegisterSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: strongPassword,
   confirmPassword: z.string(),
 }).refine((d) => d.password === d.confirmPassword, {
   message: "Passwords don't match",
@@ -20,11 +28,18 @@ export const ForgotPasswordSchema = z.object({
 });
 
 export const ResetPasswordSchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: strongPassword,
   confirmPassword: z.string(),
 }).refine((d) => d.password === d.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
+});
+
+export const ContactSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  email: z.string().email("Invalid email"),
+  subject: z.string().min(3, "Subject must be at least 3 characters").max(200),
+  message: z.string().min(10, "Message must be at least 10 characters").max(2000),
 });
 
 export const PlaceSchema = z.object({
