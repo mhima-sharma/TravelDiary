@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react";
 import { auth } from "@/lib/auth";
 import { PageTracker } from "@/components/shared/page-tracker";
 import { PWARegister } from "@/components/shared/pwa-register";
+import { NavigationProgress } from "@/components/shared/navigation-progress";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
@@ -82,6 +83,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={inter.className}>
         <SessionProvider session={session}>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+            <NavigationProgress />
             <PWARegister />
             <PageTracker />
             {children}
