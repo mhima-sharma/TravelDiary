@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -20,15 +19,11 @@ import { MapPin, Clock, DollarSign, Calendar, User, Eye } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
 import { FavoriteButton } from "@/components/places/favorite-button";
+import { ReviewSection } from "@/components/places/review-section";
 import { ShareButton } from "@/components/places/share-button";
 import { ReportButton } from "@/components/places/report-button";
 import { VisitButton } from "@/components/places/visit-button";
 import { getUserVisitStatus } from "@/actions/visits";
-
-const ReviewSection = dynamic(
-  () => import("@/components/places/review-section").then((m) => m.ReviewSection),
-  { ssr: false, loading: () => <div className="h-32 animate-pulse rounded-xl bg-muted" /> }
-);
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -277,7 +272,9 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
             )}
 
             <Separator />
-            <ReviewSection place={place} session={session} userReview={userReview ?? null} />
+            <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-muted" />}>
+              <ReviewSection place={place} session={session} userReview={userReview ?? null} />
+            </Suspense>
           </div>
 
           {/* Sidebar */}
