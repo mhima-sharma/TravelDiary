@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { PlaceSchema } from "@/schemas";
 import { PlaceStatus } from "@prisma/client";
 import { clawbackPlaceRewards } from "@/lib/gamification";
+import { notifyNewPlace, notifyPlaceUpdated, notifyNewReport } from "@/lib/telegram";
 
 export async function createPlace(values: z.infer<typeof PlaceSchema>, imageUrls: string[]) {
   const session = await auth();
@@ -29,6 +30,9 @@ export async function createPlace(values: z.infer<typeof PlaceSchema>, imageUrls
   });
 
   revalidatePath("/dashboard/my-places");
+
+  notifyNewPlace(parsed.data.title, session.user.name ?? session.user.email ?? "Unknown");
+
   return { success: "Place submitted for review!", place };
 }
 
@@ -62,6 +66,11 @@ export async function updatePlace(id: string, values: z.infer<typeof PlaceSchema
 
   revalidatePath(`/places/${place.slug}`);
   revalidatePath("/dashboard/my-places");
+
+  if (session.user.role !== "ADMIN") {
+    notifyPlaceUpdated(parsed.data.title, session.user.name ?? session.user.email ?? "Unknown");
+  }
+
   return { success: "Place updated!" };
 }
 
@@ -121,6 +130,8 @@ export async function submitReport(placeId: string, reason: string, details?: st
   });
   if (existing) return { error: "You have already reported this place" };
 
+  const place = await db.place.findUnique({ where: { id: placeId }, select: { title: true } });
+
   await db.report.create({
     data: {
       placeId,
@@ -129,6 +140,12 @@ export async function submitReport(placeId: string, reason: string, details?: st
       details: details || null,
     },
   });
+
+  notifyNewReport(
+    place?.title ?? placeId,
+    reason,
+    session.user.name ?? session.user.email ?? "Unknown"
+  );
 
   return { success: "Report submitted. Thank you for helping keep the community safe." };
 }

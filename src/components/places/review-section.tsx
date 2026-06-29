@@ -52,7 +52,7 @@ function ReviewForm({
   const [imageUrls, setImageUrls] = useState<string[]>(existingReview?.images.map((i) => i.url) ?? []);
   const [isPending, startTransition] = useTransition();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<ReviewInput>({
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<ReviewInput>({
     resolver: zodResolver(ReviewSchema),
     defaultValues: {
       rating: existingReview?.rating ?? 0,
@@ -62,8 +62,12 @@ function ReviewForm({
     },
   });
 
+  const handleRatingChange = (newRating: number) => {
+    setRating(newRating);
+    setValue("rating", newRating, { shouldValidate: true });
+  };
+
   const onSubmit = (data: ReviewInput) => {
-    data.rating = rating;
     data.images = imageUrls;
     if (data.rating < 1) { toast.error("Please select a rating"); return; }
     startTransition(async () => {
@@ -79,7 +83,7 @@ function ReviewForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <Label>Your Rating</Label>
-        <StarRating rating={rating} interactive onRate={setRating} size="lg" />
+        <StarRating rating={rating} interactive onRate={handleRatingChange} size="lg" />
       </div>
       <div className="space-y-1">
         <Label htmlFor="title">Review Title (optional)</Label>

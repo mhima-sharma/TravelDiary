@@ -23,13 +23,18 @@ export default async function AnalyticsPage() {
   const weekStart = new Date(todayStart); weekStart.setDate(weekStart.getDate() - 6);
   const monthStart = new Date(todayStart); monthStart.setDate(monthStart.getDate() - 29);
 
-  const [totalViews, todayViews, weekViews, monthViews, uniqueTotal, uniqueToday, deviceCounts, topPages, dailyRaw] = await Promise.all([
+  const [totalViews, todayViews, weekViews, monthViews, uniqueRaw, deviceCounts, topPages, dailyRaw] = await Promise.all([
     db.pageView.count(),
     db.pageView.count({ where: { createdAt: { gte: todayStart } } }),
     db.pageView.count({ where: { createdAt: { gte: weekStart } } }),
     db.pageView.count({ where: { createdAt: { gte: monthStart } } }),
-    db.pageView.findMany({ select: { ipHash: true }, distinct: ["ipHash"] }).then((r) => r.length),
-    db.pageView.findMany({ select: { ipHash: true }, distinct: ["ipHash"], where: { createdAt: { gte: todayStart } } }).then((r) => r.length),
+    // COUNT(DISTINCT) via raw query — avoids loading all rows into JS memory
+    db.$queryRaw<{ uniqueTotal: bigint; uniqueToday: bigint }[]>`
+      SELECT
+        COUNT(DISTINCT ipHash)                                    AS uniqueTotal,
+        COUNT(DISTINCT CASE WHEN createdAt >= ${todayStart} THEN ipHash END) AS uniqueToday
+      FROM page_views
+    `,
     db.pageView.groupBy({ by: ["device"], _count: { _all: true } }),
     db.pageView.groupBy({ by: ["path"], _count: { _all: true }, orderBy: { _count: { path: "desc" } }, take: 10 }),
     // last 30 days daily counts
@@ -41,6 +46,9 @@ export default async function AnalyticsPage() {
       ORDER BY date ASC
     `,
   ]);
+
+  const uniqueTotal = Number(uniqueRaw[0]?.uniqueTotal ?? 0);
+  const uniqueToday = Number(uniqueRaw[0]?.uniqueToday ?? 0);
 
   // Build a full 30-day array (fill missing days with 0)
   const dailyMap = new Map(dailyRaw.map((r) => [r.date, Number(r.count)]));

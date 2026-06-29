@@ -44,7 +44,7 @@ export async function awardXP(
   type: string,
   description: string,
   referenceId?: string
-): Promise<{ leveledUp: boolean; newLevel: number }> {
+): Promise<{ leveledUp: boolean; newLevel: number; stats: UserStats }> {
   const stats = await ensureStats(userId);
   const newTotalXp = stats.totalXp + amount;
   const newLevel = getLevelForXp(newTotalXp);
@@ -56,7 +56,7 @@ export async function awardXP(
   });
   await db.xpTransaction.create({ data: { userId, amount, type, description, referenceId } });
 
-  return { leveledUp, newLevel };
+  return { leveledUp, newLevel, stats };
 }
 
 export async function awardCoins(
@@ -64,9 +64,10 @@ export async function awardCoins(
   amount: number,
   type: string,
   description: string,
-  referenceId?: string
+  referenceId?: string,
+  existingStats?: UserStats
 ) {
-  await ensureStats(userId);
+  if (!existingStats) await ensureStats(userId);
   await db.userStats.update({ where: { userId }, data: { coins: { increment: amount } } });
   await db.coinTransaction.create({ data: { userId, amount, type, description, referenceId } });
 }
@@ -113,15 +114,21 @@ export async function checkAndAwardBadges(userId: string): Promise<string[]> {
   if (!stats) return [];
 
   const earned = new Set(userBadges.map((ub) => ub.badge.slug));
-  const newlyEarned: string[] = [];
+  const unearned = badges.filter((b) => !earned.has(b.slug));
 
-  for (const badge of badges) {
-    if (earned.has(badge.slug)) continue;
-    if (await checkBadgeCondition(badge.slug, userId, stats)) {
-      await db.userBadge.create({ data: { userId, badgeId: badge.id } });
-      newlyEarned.push(badge.name);
-      earned.add(badge.slug);
-    }
+  // Check all unearned badges in parallel instead of a serial await-in-loop
+  const results = await Promise.all(
+    unearned.map(async (badge) => ({
+      badge,
+      passed: await checkBadgeCondition(badge.slug, userId, stats),
+    }))
+  );
+
+  const newlyEarned: string[] = [];
+  for (const { badge, passed } of results) {
+    if (!passed) continue;
+    await db.userBadge.create({ data: { userId, badgeId: badge.id } });
+    newlyEarned.push(badge.name);
   }
 
   return newlyEarned;
@@ -145,8 +152,8 @@ export async function awardPlaceApproval(placeId: string): Promise<AwardResult> 
   const coins = isFirst ? 150 : 100;
 
   const desc = isFirst ? "Place approved + First contribution bonus!" : "Place approved";
-  const { leveledUp, newLevel } = await awardXP(userId, xp, "PLACE_APPROVED", desc, placeId);
-  await awardCoins(userId, coins, "PLACE_APPROVED", desc, placeId);
+  const { leveledUp, newLevel, stats: awardedStats } = await awardXP(userId, xp, "PLACE_APPROVED", desc, placeId);
+  await awardCoins(userId, coins, "PLACE_APPROVED", desc, placeId, awardedStats);
 
   await db.userStats.update({ where: { userId }, data: { approvedPlaces: { increment: 1 } } });
   await db.place.update({ where: { id: placeId }, data: { rewardGiven: true } });
@@ -181,8 +188,8 @@ export async function awardFeaturedPlace(placeId: string): Promise<AwardResult> 
   const place = await db.place.findUnique({ where: { id: placeId } });
   if (!place || place.isFeatured) return zero;
 
-  const { leveledUp, newLevel } = await awardXP(place.userId, 50, "PLACE_FEATURED", "Place featured", placeId);
-  await awardCoins(place.userId, 50, "PLACE_FEATURED", "Place featured", placeId);
+  const { leveledUp, newLevel, stats: featuredStats } = await awardXP(place.userId, 50, "PLACE_FEATURED", "Place featured", placeId);
+  await awardCoins(place.userId, 50, "PLACE_FEATURED", "Place featured", placeId, featuredStats);
   await db.place.update({ where: { id: placeId }, data: { isFeatured: true } });
 
   const newBadges = await checkAndAwardBadges(place.userId);
@@ -194,8 +201,8 @@ export async function awardHiddenGem(placeId: string): Promise<AwardResult> {
   const place = await db.place.findUnique({ where: { id: placeId } });
   if (!place || place.isHiddenGem) return zero;
 
-  const { leveledUp, newLevel } = await awardXP(place.userId, 100, "HIDDEN_GEM", "Hidden gem selected", placeId);
-  await awardCoins(place.userId, 100, "HIDDEN_GEM", "Hidden gem selected", placeId);
+  const { leveledUp, newLevel, stats: gemStats } = await awardXP(place.userId, 100, "HIDDEN_GEM", "Hidden gem selected", placeId);
+  await awardCoins(place.userId, 100, "HIDDEN_GEM", "Hidden gem selected", placeId, gemStats);
   await db.userStats.update({ where: { userId: place.userId }, data: { hiddenGems: { increment: 1 } } });
   await db.place.update({ where: { id: placeId }, data: { isHiddenGem: true } });
 
@@ -210,8 +217,8 @@ export async function awardReviewApproval(reviewId: string): Promise<AwardResult
   const review = await db.review.findUnique({ where: { id: reviewId } });
   if (!review || review.rewardGiven) return zero;
 
-  const { leveledUp, newLevel } = await awardXP(review.userId, 20, "REVIEW_APPROVED", "Review approved", reviewId);
-  await awardCoins(review.userId, 20, "REVIEW_APPROVED", "Review approved", reviewId);
+  const { leveledUp, newLevel, stats: reviewStats } = await awardXP(review.userId, 20, "REVIEW_APPROVED", "Review approved", reviewId);
+  await awardCoins(review.userId, 20, "REVIEW_APPROVED", "Review approved", reviewId, reviewStats);
   await db.review.update({ where: { id: reviewId }, data: { rewardGiven: true } });
   await db.userStats.update({ where: { userId: review.userId }, data: { totalReviews: { increment: 1 } } });
 
@@ -253,10 +260,14 @@ export async function getLeaderboard(period: "week" | "month" | "all", limit = 5
         user: { select: { id: true, name: true, image: true, username: true } },
       },
     });
-    const badgeCounts = await Promise.all(
-      stats.map((s) => db.userBadge.count({ where: { userId: s.userId } }))
-    );
-    return stats.map((s, i) => ({ ...s, badgeCount: badgeCounts[i], rank: i + 1 }));
+    // Single grouped query instead of N individual count queries
+    const badgeGroups = await db.userBadge.groupBy({
+      by: ["userId"],
+      where: { userId: { in: stats.map((s) => s.userId) } },
+      _count: { _all: true },
+    });
+    const badgeCountMap = new Map(badgeGroups.map((b) => [b.userId, b._count._all]));
+    return stats.map((s, i) => ({ ...s, badgeCount: badgeCountMap.get(s.userId) ?? 0, rank: i + 1 }));
   }
 
   const since = new Date();
@@ -278,7 +289,13 @@ export async function getLeaderboard(period: "week" | "month" | "all", limit = 5
     db.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true, image: true, username: true } }),
     db.userStats.findMany({ where: { userId: { in: userIds } } }),
   ]);
-  const badgeCounts = await Promise.all(userIds.map((id) => db.userBadge.count({ where: { userId: id } })));
+  // Single grouped query instead of N individual count queries
+  const badgeGroups = await db.userBadge.groupBy({
+    by: ["userId"],
+    where: { userId: { in: userIds } },
+    _count: { _all: true },
+  });
+  const badgeCountMap = new Map(badgeGroups.map((b) => [b.userId, b._count._all]));
 
   return grouped.map((g, i) => {
     const user = users.find((u) => u.id === g.userId);
@@ -290,7 +307,7 @@ export async function getLeaderboard(period: "week" | "month" | "all", limit = 5
       totalXp: g._sum.amount ?? 0,
       coins: stats?.coins ?? 0,
       level: stats?.level ?? 1,
-      badgeCount: badgeCounts[i],
+      badgeCount: badgeCountMap.get(g.userId) ?? 0,
     };
   });
 }

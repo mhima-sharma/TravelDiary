@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ReviewSchema } from "@/schemas";
 import { awardXP, awardCoins, checkAndAwardBadges } from "@/lib/gamification";
+import { notifyNewReview } from "@/lib/telegram";
 
 async function recalcRating(placeId: string) {
   const result = await db.review.aggregate({
@@ -57,8 +58,15 @@ export async function createReview(placeId: string, values: z.infer<typeof Revie
     await checkAndAwardBadges(session.user.id);
   }
 
-  const place = await db.place.findUnique({ where: { id: placeId }, select: { slug: true } });
+  const place = await db.place.findUnique({ where: { id: placeId }, select: { slug: true, title: true } });
   if (place) revalidatePath(`/places/${place.slug}`);
+
+  notifyNewReview(
+    place?.title ?? placeId,
+    session.user.name ?? session.user.email ?? "Unknown",
+    parsed.data.rating
+  );
+
   return { success: "Review posted!" };
 }
 

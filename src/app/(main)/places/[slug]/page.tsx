@@ -78,7 +78,8 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
 
   if (!place) notFound();
 
-  await incrementViews(place.id);
+  // Fire-and-forget: don't block the critical render path for a view counter
+  incrementViews(place.id);
 
   const placeInclude = {
     category: { select: { name: true, slug: true, icon: true } },

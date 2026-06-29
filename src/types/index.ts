@@ -61,6 +61,8 @@ export type SearchParams = {
   country?: string;
   rating?: string;
   season?: string;
-  sort?: "newest" | "popular" | "rating";
+  sort?: "newest" | "popular" | "rating" | "nearest";
+  lat?: string;
+  lng?: string;
   page?: string;
 };

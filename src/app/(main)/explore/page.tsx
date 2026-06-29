@@ -1,5 +1,12 @@
 import { Suspense } from "react";
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
+
+const getCategories = unstable_cache(
+  () => db.category.findMany({ orderBy: { name: "asc" } }),
+  ["categories"],
+  { revalidate: 3600, tags: ["categories"] }
+);
 import { PlaceCard } from "@/components/shared/place-card";
 import { PlaceCardSkeleton } from "@/components/shared/place-card-skeleton";
 import { AdCard } from "@/components/shared/ad-card";
@@ -9,10 +16,23 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { PlaceStatus } from "@prisma/client";
-import { Search, Map } from "lucide-react";
+import { Search, Map, MapPin } from "lucide-react";
 import { BackButton } from "@/components/shared/back-button";
+import { NearMeButton } from "@/components/places/near-me-button";
 import type { SearchParams } from "@/types";
 import type { Metadata } from "next";
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 export const metadata: Metadata = {
   title: "Explore Places",
@@ -20,7 +40,7 @@ export const metadata: Metadata = {
 };
 
 async function PlacesList({ searchParams }: { searchParams: SearchParams }) {
-  const { q, category, city, state, country, rating, sort = "newest", page = "1" } = searchParams;
+  const { q, category, city, state, country, rating, sort = "newest", page = "1", lat, lng } = searchParams;
   const pageNum = parseInt(page, 10);
   const take = 12;
   const skip = (pageNum - 1) * take;
@@ -38,25 +58,46 @@ async function PlacesList({ searchParams }: { searchParams: SearchParams }) {
   if (country) where.country = { contains: country };
   if (rating) where.averageRating = { gte: parseFloat(rating) };
 
-  const orderBy =
-    sort === "rating" ? { averageRating: "desc" as const } :
-    sort === "popular" ? { views: "desc" as const } :
-    { createdAt: "desc" as const };
+  const include = {
+    category: { select: { name: true, slug: true, icon: true } },
+    user: { select: { id: true, name: true, image: true } },
+    images: { select: { id: true, url: true, alt: true }, take: 1 },
+    _count: { select: { reviews: true, favorites: true } },
+  };
 
-  const [places, total, activeAds] = await Promise.all([
-    db.place.findMany({
-      where,
-      orderBy,
-      take,
-      skip,
-      include: {
-        category: { select: { name: true, slug: true, icon: true } },
-        user: { select: { id: true, name: true, image: true } },
-        images: { select: { id: true, url: true, alt: true }, take: 1 },
-        _count: { select: { reviews: true, favorites: true } },
-      },
-    }),
-    db.place.count({ where }),
+  const isNearest = sort === "nearest" && lat && lng;
+  const userLat = lat ? parseFloat(lat) : null;
+  const userLng = lng ? parseFloat(lng) : null;
+
+  let places: Awaited<ReturnType<typeof db.place.findMany<{ include: typeof include }>>>;
+  let total: number;
+
+  if (isNearest && userLat !== null && userLng !== null) {
+    const allPlaces = await db.place.findMany({ where, include });
+    allPlaces.sort((a, b) => {
+      const distA = a.latitude && a.longitude
+        ? haversineKm(userLat, userLng, a.latitude, a.longitude)
+        : Infinity;
+      const distB = b.latitude && b.longitude
+        ? haversineKm(userLat, userLng, b.latitude, b.longitude)
+        : Infinity;
+      return distA - distB;
+    });
+    total = allPlaces.length;
+    places = allPlaces.slice(skip, skip + take);
+  } else {
+    const orderBy =
+      sort === "rating" ? { averageRating: "desc" as const } :
+      sort === "popular" ? { views: "desc" as const } :
+      { createdAt: "desc" as const };
+
+    [places, total] = await Promise.all([
+      db.place.findMany({ where, orderBy, take, skip, include }),
+      db.place.count({ where }),
+    ]);
+  }
+
+  const [activeAds] = await Promise.all([
     db.advertisement.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" } }),
   ]);
 
@@ -106,7 +147,7 @@ async function PlacesList({ searchParams }: { searchParams: SearchParams }) {
 
 export default async function ExplorePage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
-  const categories = await db.category.findMany({ orderBy: { name: "asc" } });
+  const categories = await getCategories();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -145,6 +186,13 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
           </SelectContent>
         </Select>
         <Button type="submit">Search</Button>
+        <Suspense fallback={
+          <Button type="button" variant="outline" disabled className="shrink-0">
+            <MapPin className="h-4 w-4 mr-2" />Near Me
+          </Button>
+        }>
+          <NearMeButton />
+        </Suspense>
       </form>
 
       {params.q && (

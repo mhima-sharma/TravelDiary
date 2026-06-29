@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin } from "lucide-react";
+import { TravelDiaryIcon } from "@/components/shared/travel-diary-icon";
 
 const links = {
   Explore: [
@@ -27,7 +27,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-              <MapPin className="h-5 w-5 text-primary" />
+              <TravelDiaryIcon className="h-7 w-7" />
               TravelDiary
             </Link>
             <p className="text-sm text-muted-foreground">
