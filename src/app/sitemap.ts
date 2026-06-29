@@ -1,5 +1,4 @@
 import { MetadataRoute } from "next";
-import { db } from "@/lib/db";
 import { PlaceStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +14,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/contact`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
   ];
 
+  if (!process.env.DATABASE_URL) {
+    return staticRoutes;
+  }
+
   try {
+    const { db } = await import("@/lib/db");
     const [places, categories] = await Promise.all([
       db.place.findMany({ where: { status: PlaceStatus.APPROVED }, select: { slug: true, updatedAt: true } }),
       db.category.findMany({ select: { slug: true, updatedAt: true } }),
