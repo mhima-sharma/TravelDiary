@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getLeaderboard } from "@/lib/gamification";
@@ -7,7 +8,20 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Zap, Coins, Medal } from "lucide-react";
 
-export const metadata = { title: "Leaderboard — TravelDiary", description: "Top contributors on TravelDiary" };
+export const metadata: Metadata = {
+  title: "Leaderboard",
+  description: "Top contributors on TravelDiary – see who has discovered and shared the most amazing places.",
+  openGraph: {
+    title: "Leaderboard | TravelDiary",
+    description: "Top contributors on TravelDiary – see who has discovered and shared the most amazing places.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Leaderboard | TravelDiary",
+    description: "Top contributors on TravelDiary – see who has discovered and shared the most amazing places.",
+  },
+};
 export const revalidate = 300;
 
 async function LeaderboardTable({ period }: { period: "week" | "month" | "all" }) {

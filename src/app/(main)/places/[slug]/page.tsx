@@ -138,18 +138,34 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
     ...place.images,
   ];
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "TouristAttraction",
-    name: place.title,
-    description: place.shortDescription,
-    address: { "@type": "PostalAddress", addressLocality: place.city, addressRegion: place.state, addressCountry: place.country },
-    aggregateRating: place._count.reviews > 0 ? { "@type": "AggregateRating", ratingValue: place.averageRating, reviewCount: place._count.reviews } : undefined,
-  };
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "TouristAttraction",
+      name: place.title,
+      description: place.shortDescription,
+      image: place.featuredImage ?? undefined,
+      address: { "@type": "PostalAddress", addressLocality: place.city, addressRegion: place.state, addressCountry: place.country },
+      ...(place.latitude && place.longitude ? { geo: { "@type": "GeoCoordinates", latitude: place.latitude, longitude: place.longitude } } : {}),
+      aggregateRating: place._count.reviews > 0 ? { "@type": "AggregateRating", ratingValue: place.averageRating, reviewCount: place._count.reviews } : undefined,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: appUrl },
+        { "@type": "ListItem", position: 2, name: "Explore", item: `${appUrl}/explore` },
+        { "@type": "ListItem", position: 3, name: place.category.name, item: `${appUrl}/categories/${place.category.slug}` },
+        { "@type": "ListItem", position: 4, name: place.title, item: `${appUrl}/places/${place.slug}` },
+      ],
+    },
+  ];
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="flex items-center justify-between mb-4">
           <BackButton href="/explore" label="Back to Explore" />

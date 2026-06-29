@@ -4,7 +4,6 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { PostStatus } from "@prisma/client";
 import { CalendarDays, User, ArrowLeft } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { Metadata } from "next";
 
@@ -25,10 +24,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${post.title} | TravelDiary Blog`,
     description: post.excerpt,
+    alternates: { canonical: `${process.env.NEXT_PUBLIC_APP_URL}/blog/${post.slug}` },
     openGraph: {
+      type: "article",
       title: post.title,
       description: post.excerpt,
-      images: post.featuredImage ? [{ url: post.featuredImage }] : [],
+      images: post.featuredImage ? [{ url: post.featuredImage, width: 1200, height: 630, alt: post.title }] : [{ url: "/og-image.png" }],
+      publishedTime: post.publishedAt?.toISOString(),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: post.featuredImage ? [post.featuredImage] : ["/og-image.png"],
     },
   };
 }
@@ -57,7 +65,21 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     select: { title: true, slug: true, excerpt: true, publishedAt: true },
   });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    image: post.featuredImage ?? undefined,
+    author: { "@type": "Person", name: post.author.name },
+    datePublished: post.publishedAt?.toISOString(),
+    publisher: { "@type": "Organization", name: "TravelDiary", url: process.env.NEXT_PUBLIC_APP_URL },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${process.env.NEXT_PUBLIC_APP_URL}/blog/${post.slug}` },
+  };
+
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="container mx-auto px-4 py-10 max-w-3xl">
       <Link href="/blog" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
         <ArrowLeft className="h-4 w-4" /> Back to Blog
@@ -118,5 +140,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </>
       )}
     </div>
+    </>
   );
 }

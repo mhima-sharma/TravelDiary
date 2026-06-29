@@ -3,7 +3,17 @@ import { MapPin, Users, Star, Globe } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About Us",
-  description: "Learn about TravelDiary and our mission to connect travelers worldwide.",
+  description: "Learn about TravelDiary and our mission to connect travelers worldwide and help people discover amazing places.",
+  openGraph: {
+    title: "About Us | TravelDiary",
+    description: "Learn about TravelDiary and our mission to connect travelers worldwide.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Us | TravelDiary",
+    description: "Learn about TravelDiary and our mission to connect travelers worldwide.",
+  },
 };
 
 export default function AboutPage() {

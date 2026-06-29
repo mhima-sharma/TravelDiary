@@ -28,18 +28,18 @@ export const metadata: Metadata = {
     siteName: "TravelDiary",
     title: "TravelDiary – Discover Amazing Places",
     description: "Explore thousands of incredible travel destinations.",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "TravelDiary" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "TravelDiary" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "TravelDiary – Discover Amazing Places",
     description: "Explore thousands of incredible travel destinations.",
-    images: ["/og-image.jpg"],
+    images: ["/og-image.png"],
   },
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
   },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -61,11 +61,23 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "TravelDiary",
+  url: process.env.NEXT_PUBLIC_APP_URL,
+  description: "Explore thousands of incredible travel destinations across India and the world.",
+  sameAs: [],
+};
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
+      </head>
       <body className={inter.className}>
         <SessionProvider session={session}>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>

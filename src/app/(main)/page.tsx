@@ -1,6 +1,24 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
+
+export const metadata: Metadata = {
+  title: "TravelDiary – Discover Amazing Places",
+  description: "Explore thousands of incredible travel destinations. Discover hill stations, beaches, temples, and hidden gems across India and the world.",
+  alternates: { canonical: process.env.NEXT_PUBLIC_APP_URL },
+  openGraph: {
+    title: "TravelDiary – Discover Amazing Places",
+    description: "Explore thousands of incredible travel destinations across India and the world.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "TravelDiary" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TravelDiary – Discover Amazing Places",
+    description: "Explore thousands of incredible travel destinations across India and the world.",
+    images: ["/og-image.png"],
+  },
+};
 import { Search, MapPin, ArrowRight, Mountain, Waves, Landmark, TreePine, Droplets, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
