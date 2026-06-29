@@ -22,6 +22,8 @@ import { NearMeButton } from "@/components/places/near-me-button";
 import type { SearchParams } from "@/types";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;

@@ -3,9 +3,10 @@ import Image from "next/image";
 import { db } from "@/lib/db";
 import { PostStatus } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { CalendarDays, User } from "lucide-react";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Blog | TravelDiary",
