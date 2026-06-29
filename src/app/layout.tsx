@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react";
 import { auth } from "@/lib/auth";
 import { PageTracker } from "@/components/shared/page-tracker";
 import { PWARegister } from "@/components/shared/pwa-register";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -71,6 +72,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <PageTracker />
             {children}
             <Toaster position="top-right" richColors />
+            <Analytics />
           </ThemeProvider>
         </SessionProvider>
       </body>
