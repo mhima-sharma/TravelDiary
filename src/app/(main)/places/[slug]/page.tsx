@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { PlaceStatus } from "@prisma/client";
@@ -9,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { StarRating } from "@/components/shared/star-rating";
 
 import { PlaceCard } from "@/components/shared/place-card";
+import { PlaceCardSkeleton } from "@/components/shared/place-card-skeleton";
 import { ImageCarousel } from "@/components/shared/image-carousel";
 import { BackButton } from "@/components/shared/back-button";
 import { incrementViews } from "@/actions/places";
@@ -17,11 +20,15 @@ import { MapPin, Clock, DollarSign, Calendar, User, Eye } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
 import { FavoriteButton } from "@/components/places/favorite-button";
-import { ReviewSection } from "@/components/places/review-section";
 import { ShareButton } from "@/components/places/share-button";
 import { ReportButton } from "@/components/places/report-button";
 import { VisitButton } from "@/components/places/visit-button";
 import { getUserVisitStatus } from "@/actions/visits";
+
+const ReviewSection = dynamic(
+  () => import("@/components/places/review-section").then((m) => m.ReviewSection),
+  { ssr: false, loading: () => <div className="h-32 animate-pulse rounded-xl bg-muted" /> }
+);
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -337,9 +344,11 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
             <p className="text-muted-foreground mb-6 text-sm">
               More places to explore in {place.state}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {nearbyPlaces.map((p) => <PlaceCard key={p.id} place={p} />)}
-            </div>
+            <Suspense fallback={<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{Array.from({ length: 4 }).map((_, i) => <PlaceCardSkeleton key={i} />)}</div>}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {nearbyPlaces.map((p) => <PlaceCard key={p.id} place={p} />)}
+              </div>
+            </Suspense>
           </div>
         )}
 
@@ -347,9 +356,11 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
         {similarPlaces.length > 0 && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-6">Similar Places</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {similarPlaces.map((p) => <PlaceCard key={p.id} place={p} />)}
-            </div>
+            <Suspense fallback={<div className="grid grid-cols-1 md:grid-cols-3 gap-6">{Array.from({ length: 3 }).map((_, i) => <PlaceCardSkeleton key={i} />)}</div>}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {similarPlaces.map((p) => <PlaceCard key={p.id} place={p} />)}
+              </div>
+            </Suspense>
           </div>
         )}
       </div>

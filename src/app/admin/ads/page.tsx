@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { db } from "@/lib/db";
 import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,8 +34,8 @@ export default async function AdminAdsPage() {
           {ads.map((ad) => (
             <div key={ad.id} className="flex items-center gap-4 p-4 border rounded-xl bg-card">
               {ad.image && (
-                <div className="h-16 w-24 rounded-lg overflow-hidden shrink-0">
-                  <img src={ad.image} alt={ad.title} className="w-full h-full object-cover" />
+                <div className="relative h-16 w-24 rounded-lg overflow-hidden shrink-0">
+                  <Image src={ad.image} alt={ad.title} fill className="object-cover" unoptimized />
                 </div>
               )}
               <div className="flex-1 min-w-0">

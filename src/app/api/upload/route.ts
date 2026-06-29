@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import sharp from "sharp";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { randomUUID } from "crypto";
+import { cloudinary } from "@/lib/cloudinary";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -19,22 +17,35 @@ export async function POST(req: NextRequest) {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  // Compress: resize to max 1200×900, convert to WebP quality 78
+  // Pre-compress with Sharp before uploading — reduces Cloudinary bandwidth and storage
   const compressed = await sharp(buffer)
     .resize(1200, 900, { fit: "inside", withoutEnlargement: true })
     .webp({ quality: 78 })
     .toBuffer();
 
-  const filename = `${randomUUID()}.webp`;
-  const uploadDir = join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(join(uploadDir, filename), compressed);
-
   const originalKB = Math.round(file.size / 1024);
   const compressedKB = Math.round(compressed.length / 1024);
 
+  // Upload to Cloudinary as a base64 data URI
+  const dataUri = `data:image/webp;base64,${compressed.toString("base64")}`;
+
+  const result = await cloudinary.uploader.upload(dataUri, {
+    folder: "travel_diary",
+    resource_type: "image",
+    // Cloudinary re-encodes with auto quality + serves WebP/AVIF to browsers that support it
+    transformation: [
+      { quality: "auto:good", fetch_format: "auto" },
+    ],
+    // Generate an eager small thumbnail to warm the cache
+    eager: [
+      { width: 400, height: 300, crop: "fill", quality: "auto", fetch_format: "auto" },
+    ],
+    eager_async: true,
+  });
+
   return NextResponse.json({
-    url: `/uploads/${filename}`,
+    url: result.secure_url,
+    publicId: result.public_id,
     originalKB,
     compressedKB,
     savedPercent: Math.round((1 - compressedKB / originalKB) * 100),

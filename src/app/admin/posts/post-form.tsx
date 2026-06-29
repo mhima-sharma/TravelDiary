@@ -78,11 +78,13 @@ export function PostForm({ post }: PostFormProps) {
           onChange={(e) => setFeaturedImage(e.target.value)}
         />
         {featuredImage && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={featuredImage}
             alt="preview"
             className="mt-2 w-full max-h-52 object-cover rounded-lg border"
             onError={(e) => (e.currentTarget.style.display = "none")}
+            loading="lazy"
           />
         )}
       </div>

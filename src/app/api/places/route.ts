@@ -43,5 +43,8 @@ export async function GET(req: NextRequest) {
     db.place.count({ where }),
   ]);
 
-  return NextResponse.json({ places, total, page, pages: Math.ceil(total / take) });
+  return NextResponse.json(
+    { places, total, page, pages: Math.ceil(total / take) },
+    { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
+  );
 }

@@ -8,6 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { Metadata } from "next";
 
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const posts = await db.post.findMany({
+    where: { status: PostStatus.PUBLISHED },
+    select: { slug: true },
+  });
+  return posts.map((p) => ({ slug: p.slug }));
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const post = await db.post.findUnique({ where: { slug, status: PostStatus.PUBLISHED } });
