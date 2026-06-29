@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
   },
   experimental: {
-    serverActions: { allowedOrigins: ["localhost:3000"] },
+    serverActions: { allowedOrigins: ["localhost:3000", ...(process.env.NEXT_PUBLIC_APP_URL ? [new URL(process.env.NEXT_PUBLIC_APP_URL).host] : [])] },
     // Opt in to PPR (partial pre-rendering) once stable — flag here as reminder
     // ppr: true,
   },
