@@ -1,8 +1,126 @@
 import { db } from "@/lib/db";
-import { BarChart3, Users, Eye, TrendingUp, Monitor, Smartphone, Tablet, Globe } from "lucide-react";
+import { BarChart3, Users, Eye, TrendingUp, Monitor, Smartphone, Tablet, Globe, Zap, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Analytics" };
+
+type PageSpeedCategory = { score: number | null };
+
+async function fetchPageSpeed(url: string, strategy: "mobile" | "desktop") {
+  const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo`;
+  try {
+    const res = await fetch(apiUrl, { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const cats = data.lighthouseResult?.categories as Record<string, PageSpeedCategory> | undefined;
+    return {
+      performance: cats?.performance?.score != null ? Math.round(cats.performance.score * 100) : null,
+      accessibility: cats?.accessibility?.score != null ? Math.round(cats.accessibility.score * 100) : null,
+      bestPractices: cats?.["best-practices"]?.score != null ? Math.round(cats["best-practices"].score * 100) : null,
+      seo: cats?.seo?.score != null ? Math.round(cats.seo.score * 100) : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function scoreColor(score: number | null) {
+  if (score === null) return "text-muted-foreground";
+  if (score >= 90) return "text-green-600 dark:text-green-400";
+  if (score >= 50) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
+}
+
+function scoreRingColor(score: number | null) {
+  if (score === null) return "#94a3b8";
+  if (score >= 90) return "#16a34a";
+  if (score >= 50) return "#d97706";
+  return "#dc2626";
+}
+
+function ScoreRing({ score, label }: { score: number | null; label: string }) {
+  const radius = 28;
+  const circumference = 2 * Math.PI * radius;
+  const filled = score != null ? (score / 100) * circumference : 0;
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="relative w-[72px] h-[72px]">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r={radius} fill="none" stroke="currentColor" strokeWidth="6" className="text-muted/50" />
+          <circle
+            cx="36" cy="36" r={radius} fill="none"
+            stroke={scoreRingColor(score)} strokeWidth="6"
+            strokeDasharray={`${filled} ${circumference}`}
+            strokeLinecap="round"
+          />
+        </svg>
+        <span className={`absolute inset-0 flex items-center justify-center text-sm font-bold ${scoreColor(score)}`}>
+          {score ?? "—"}
+        </span>
+      </div>
+      <span className="text-xs text-muted-foreground text-center leading-tight">{label}</span>
+    </div>
+  );
+}
+
+async function PageSpeedSection({ siteUrl }: { siteUrl: string }) {
+  const [mobile, desktop] = await Promise.all([
+    fetchPageSpeed(siteUrl, "mobile"),
+    fetchPageSpeed(siteUrl, "desktop"),
+  ]);
+
+  const psUrl = `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(siteUrl)}`;
+
+  return (
+    <div className="bg-card border rounded-xl p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <Zap className="h-4 w-4 text-primary" />
+          <h2 className="font-semibold">PageSpeed Insights</h2>
+          <span className="text-xs text-muted-foreground">— refreshed every hour</span>
+        </div>
+        <a
+          href={psUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          Open full report <ExternalLink className="h-3 w-3" />
+        </a>
+      </div>
+
+      {!mobile && !desktop ? (
+        <p className="text-sm text-muted-foreground">Could not load PageSpeed data. The API may be rate-limited — try again in a minute.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[
+            { label: "Mobile", data: mobile },
+            { label: "Desktop", data: desktop },
+          ].map(({ label, data }) => (
+            <div key={label}>
+              <p className="text-sm font-medium mb-4 flex items-center gap-2">
+                {label === "Mobile" ? <Smartphone className="h-4 w-4 text-muted-foreground" /> : <Monitor className="h-4 w-4 text-muted-foreground" />}
+                {label}
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                <ScoreRing score={data?.performance ?? null} label="Performance" />
+                <ScoreRing score={data?.accessibility ?? null} label="Accessibility" />
+                <ScoreRing score={data?.bestPractices ?? null} label="Best Practices" />
+                <ScoreRing score={data?.seo ?? null} label="SEO" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-4 pt-4 border-t flex gap-4 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />90–100 Good</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />50–89 Needs improvement</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />0–49 Poor</span>
+      </div>
+    </div>
+  );
+}
 
 function StatCard({ icon: Icon, label, value, sub }: { icon: React.ElementType; label: string; value: string | number; sub?: string }) {
   return (
@@ -172,6 +290,9 @@ export default async function AnalyticsPage() {
           </div>
         </div>
       </div>
+
+      {/* PageSpeed Insights */}
+      <PageSpeedSection siteUrl={process.env.NEXT_PUBLIC_APP_URL ?? "https://travel-diary-ochre.vercel.app/"} />
     </div>
   );
 }

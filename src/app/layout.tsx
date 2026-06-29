@@ -9,6 +9,7 @@ import { PageTracker } from "@/components/shared/page-tracker";
 import { PWARegister } from "@/components/shared/pwa-register";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -87,6 +88,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Toaster position="top-right" richColors />
             <Analytics />
             <SpeedInsights />
+            {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && !process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID.includes("XXXXXXXXXX") && (
+              <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+            )}
           </ThemeProvider>
         </SessionProvider>
       </body>
