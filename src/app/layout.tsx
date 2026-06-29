@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/shared/theme-provider";
@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/lib/auth";
 import { PageTracker } from "@/components/shared/page-tracker";
+import { PWARegister } from "@/components/shared/pwa-register";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,9 +37,26 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "TravelDiary",
   },
   robots: { index: true, follow: true },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0ea5e9" },
+    { media: "(prefers-color-scheme: dark)", color: "#0369a1" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -49,6 +67,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={inter.className}>
         <SessionProvider session={session}>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+            <PWARegister />
             <PageTracker />
             {children}
             <Toaster position="top-right" richColors />
