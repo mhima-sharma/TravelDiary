@@ -20,6 +20,7 @@ import { PlaceStatus } from "@prisma/client";
 import { Search, Map, MapPin } from "lucide-react";
 import { BackButton } from "@/components/shared/back-button";
 import { NearMeButton } from "@/components/places/near-me-button";
+import { LocationFilterFields } from "@/components/places/location-filter-fields";
 import type { SearchParams } from "@/types";
 import type { Metadata } from "next";
 
@@ -209,6 +210,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
             <SelectItem value="3">3+ Stars</SelectItem>
           </SelectContent>
         </Select>
+        <LocationFilterFields initialCountry={params.country} initialState={params.state} initialCity={params.city} />
         <Button type="submit">Search</Button>
         <Suspense fallback={
           <Button type="button" variant="outline" disabled className="shrink-0">

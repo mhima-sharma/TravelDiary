@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -12,6 +12,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CountrySelect } from "@/components/location/country-select";
+import { StateSelect } from "@/components/location/state-select";
+import { CitySelect } from "@/components/location/city-select";
 import { PlaceSchema, type PlaceInput } from "@/schemas";
 import { createPlace, updatePlace } from "@/actions/places";
 import { slugify } from "@/lib/utils";
@@ -30,10 +33,12 @@ export function PlaceForm({ categories, initialData }: PlaceFormProps) {
     initialData?.featuredImage ? [initialData.featuredImage] : []
   );
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<PlaceInput>({
+  const { register, handleSubmit, setValue, watch, control, formState: { errors } } = useForm<PlaceInput>({
     resolver: zodResolver(PlaceSchema),
     defaultValues: initialData || {},
   });
+  const watchCountry = watch("country") || "";
+  const watchState = watch("state") || "";
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue("title", e.target.value);
@@ -98,19 +103,51 @@ export function PlaceForm({ categories, initialData }: PlaceFormProps) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1">
-              <Label>City *</Label>
-              <Input placeholder="e.g. Manali" {...register("city")} />
-              {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
+              <Label>Country *</Label>
+              <Controller
+                name="country"
+                control={control}
+                render={({ field }) => (
+                  <CountrySelect
+                    value={field.value}
+                    onChange={(v) => {
+                      field.onChange(v);
+                      setValue("state", "");
+                      setValue("city", "");
+                    }}
+                  />
+                )}
+              />
+              {errors.country && <p className="text-xs text-destructive">{errors.country.message}</p>}
             </div>
             <div className="space-y-1">
               <Label>State *</Label>
-              <Input placeholder="e.g. Himachal Pradesh" {...register("state")} />
+              <Controller
+                name="state"
+                control={control}
+                render={({ field }) => (
+                  <StateSelect
+                    country={watchCountry}
+                    value={field.value}
+                    onChange={(v) => {
+                      field.onChange(v);
+                      setValue("city", "");
+                    }}
+                  />
+                )}
+              />
               {errors.state && <p className="text-xs text-destructive">{errors.state.message}</p>}
             </div>
             <div className="space-y-1">
-              <Label>Country *</Label>
-              <Input placeholder="e.g. India" {...register("country")} />
-              {errors.country && <p className="text-xs text-destructive">{errors.country.message}</p>}
+              <Label>City *</Label>
+              <Controller
+                name="city"
+                control={control}
+                render={({ field }) => (
+                  <CitySelect country={watchCountry} state={watchState} value={field.value} onChange={field.onChange} />
+                )}
+              />
+              {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
             </div>
           </div>
           <div className="space-y-1">

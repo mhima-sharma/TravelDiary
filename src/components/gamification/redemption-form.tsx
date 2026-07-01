@@ -1,6 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -12,6 +12,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { CountrySelect } from "@/components/location/country-select";
+import { StateSelect } from "@/components/location/state-select";
+import { CitySelect } from "@/components/location/city-select";
 import { Loader2, ChevronRight, ChevronLeft, CheckCircle2, MapPin, User, Package } from "lucide-react";
 
 type FormValues = z.infer<typeof RedemptionSchema>;
@@ -42,7 +45,7 @@ export function RedemptionForm({ reward, userCoins, userEmail, onSuccess }: Prop
     },
   });
 
-  const { register, handleSubmit, formState: { errors }, watch, trigger } = form;
+  const { register, handleSubmit, formState: { errors }, watch, trigger, setValue, control } = form;
   const values = watch();
 
   const step0Fields: (keyof FormValues)[] = ["fullName", "email", "phone"];
@@ -132,11 +135,44 @@ export function RedemptionForm({ reward, userCoins, userEmail, onSuccess }: Prop
             <Label htmlFor="landmark">Landmark (optional)</Label>
             <Input id="landmark" {...register("landmark")} placeholder="Near XYZ School" />
           </div>
+          <div className="space-y-1">
+            <Label htmlFor="country">Country *</Label>
+            <Controller
+              name="country"
+              control={control}
+              render={({ field }) => (
+                <CountrySelect
+                  id="country"
+                  value={field.value}
+                  onChange={(v) => {
+                    field.onChange(v);
+                    setValue("state", "");
+                    setValue("city", "");
+                  }}
+                />
+              )}
+            />
+            {errors.country && <p className="text-xs text-destructive">{errors.country.message}</p>}
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="city">City *</Label>
-              <Input id="city" {...register("city")} placeholder="Mumbai" />
-              {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
+              <Label htmlFor="state">State *</Label>
+              <Controller
+                name="state"
+                control={control}
+                render={({ field }) => (
+                  <StateSelect
+                    id="state"
+                    country={values.country}
+                    value={field.value}
+                    onChange={(v) => {
+                      field.onChange(v);
+                      setValue("city", "");
+                    }}
+                  />
+                )}
+              />
+              {errors.state && <p className="text-xs text-destructive">{errors.state.message}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="district">District</Label>
@@ -145,20 +181,21 @@ export function RedemptionForm({ reward, userCoins, userEmail, onSuccess }: Prop
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="state">State *</Label>
-              <Input id="state" {...register("state")} placeholder="Maharashtra" />
-              {errors.state && <p className="text-xs text-destructive">{errors.state.message}</p>}
+              <Label htmlFor="city">City *</Label>
+              <Controller
+                name="city"
+                control={control}
+                render={({ field }) => (
+                  <CitySelect id="city" country={values.country} state={values.state} value={field.value} onChange={field.onChange} />
+                )}
+              />
+              {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="postalCode">Postal Code *</Label>
               <Input id="postalCode" {...register("postalCode")} placeholder="400001" />
               {errors.postalCode && <p className="text-xs text-destructive">{errors.postalCode.message}</p>}
             </div>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="country">Country *</Label>
-            <Input id="country" {...register("country")} placeholder="India" />
-            {errors.country && <p className="text-xs text-destructive">{errors.country.message}</p>}
           </div>
           <div className="space-y-1">
             <Label htmlFor="deliveryInstructions">Special Instructions (optional)</Label>
