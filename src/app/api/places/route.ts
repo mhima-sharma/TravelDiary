@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { PlaceStatus } from "@prisma/client";
+import { getStateAliases } from "@/lib/map/india-states";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const q = searchParams.get("q");
   const category = searchParams.get("category");
+  const state = searchParams.get("state");
+  const country = searchParams.get("country");
   const page = parseInt(searchParams.get("page") || "1");
   const take = parseInt(searchParams.get("limit") || "12");
   const skip = (page - 1) * take;
@@ -17,6 +20,8 @@ export async function GET(req: NextRequest) {
     { state: { contains: q } },
   ];
   if (category) where.category = { slug: category };
+  if (state) where.state = { in: getStateAliases(state.trim()) };
+  if (country) where.country = { contains: country.trim() };
 
   const [places, total] = await Promise.all([
     db.place.findMany({

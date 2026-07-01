@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 
@@ -166,8 +167,18 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <BackButton href="/" label="Home" />
-        <h1 className="text-3xl font-bold mb-2 mt-2">Explore Places</h1>
-        <p className="text-muted-foreground">Discover amazing destinations from around the world</p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 mt-2">Explore Places</h1>
+            <p className="text-muted-foreground">Discover amazing destinations from around the world</p>
+          </div>
+          <Button asChild variant="outline">
+            <Link href="/explore/map">
+              <Map className="h-4 w-4 mr-2" />
+              Browse by Map
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <form className="flex flex-wrap gap-3 mb-8 p-4 border rounded-xl bg-card">
