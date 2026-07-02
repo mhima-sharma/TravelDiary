@@ -70,6 +70,14 @@ export const ReviewSchema = z.object({
   images: z.array(z.string()).optional(),
 });
 
+export const QuestionSchema = z.object({
+  body: z.string().min(5, "Question must be at least 5 characters").max(300),
+});
+
+export const AnswerSchema = z.object({
+  body: z.string().min(1, "Answer can't be empty").max(1000),
+});
+
 export const ProfileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   bio: z.string().max(500).optional(),
@@ -108,5 +116,7 @@ export type LoginInput = z.infer<typeof LoginSchema>;
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 export type PlaceInput = z.infer<typeof PlaceSchema>;
 export type ReviewInput = z.infer<typeof ReviewSchema>;
+export type QuestionInput = z.infer<typeof QuestionSchema>;
+export type AnswerInput = z.infer<typeof AnswerSchema>;
 export type ProfileInput = z.infer<typeof ProfileSchema>;
 export type CategoryInput = z.infer<typeof CategorySchema>;

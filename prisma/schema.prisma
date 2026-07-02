@@ -47,18 +47,18 @@ enum RedemptionStatus {
 }
 
 model User {
-  id                  String    @id @default(cuid())
-  name                String?
-  username            String?   @unique
-  email               String    @unique
-  emailVerified       DateTime?
-  image               String?
-  password            String?
-  role                UserRole  @default(USER)
-  bio                 String?   @db.Text
-  isBanned            Boolean   @default(false)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  name          String?
+  username      String?   @unique
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(USER)
+  bio           String?   @db.Text
+  isBanned      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   accounts            Account[]
   sessions            Session[]
@@ -67,17 +67,19 @@ model User {
   favorites           Favorite[]
   reports             Report[]
   placeVisits         PlaceVisit[]
+  questions           Question[]
+  answers             Answer[]
   verificationTokens  VerificationToken[]
   passwordResetTokens PasswordResetToken[]
 
-  posts               Post[]
+  posts Post[]
 
-  stats               UserStats?
-  userBadges          UserBadge[]
-  coinTransactions    CoinTransaction[]
-  xpTransactions      XpTransaction[]
-  redemptions         RewardRedemption[]
-  dailyRewardCounts   DailyRewardCount[]
+  stats             UserStats?
+  userBadges        UserBadge[]
+  coinTransactions  CoinTransaction[]
+  xpTransactions    XpTransaction[]
+  redemptions       RewardRedemption[]
+  dailyRewardCounts DailyRewardCount[]
 
   @@map("users")
 }
@@ -116,11 +118,11 @@ model Session {
 }
 
 model VerificationToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  email     String
-  expires   DateTime
-  userId    String?
+  id      String   @id @default(cuid())
+  token   String   @unique
+  email   String
+  expires DateTime
+  userId  String?
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -129,11 +131,11 @@ model VerificationToken {
 }
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  email     String
-  expires   DateTime
-  userId    String
+  id      String   @id @default(cuid())
+  token   String   @unique
+  email   String
+  expires DateTime
+  userId  String
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -195,6 +197,7 @@ model Place {
   favorites   Favorite[]
   reports     Report[]
   placeVisits PlaceVisit[]
+  questions   Question[]
 
   @@index([userId])
   @@index([categoryId])
@@ -221,14 +224,14 @@ model PlaceImage {
 }
 
 model Review {
-  id         String   @id @default(cuid())
-  rating     Int
-  title      String?
-  body       String   @db.Text
-  likesCount Int      @default(0)
-  rewardGiven Boolean @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(cuid())
+  rating      Int
+  title       String?
+  body        String   @db.Text
+  likesCount  Int      @default(0)
+  rewardGiven Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   userId  String
   placeId String
@@ -318,6 +321,39 @@ model PlaceVisit {
   @@unique([userId, placeId])
   @@index([placeId])
   @@map("place_visits")
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+
+  userId  String
+  placeId String
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place   Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  answers Answer[]
+
+  @@index([userId])
+  @@index([placeId])
+  @@map("questions")
+}
+
+model Answer {
+  id        String   @id @default(cuid())
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+
+  userId     String
+  questionId String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([questionId])
+  @@map("answers")
 }
 
 model PageView {
@@ -482,7 +518,7 @@ model RewardRedemption {
   latitude              Float?
   longitude             Float?
   preferredDeliveryTime String?
-  deliveryInstructions  String?          @db.Text
+  deliveryInstructions  String? @db.Text
 
   status         RedemptionStatus @default(PENDING)
   trackingNumber String?

@@ -20,6 +20,7 @@ import { formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
 import { FavoriteButton } from "@/components/places/favorite-button";
 import { ReviewSection } from "@/components/places/review-section";
+import { QASection } from "@/components/places/qa-section";
 import { ShareButton } from "@/components/places/share-button";
 import { ReportButton } from "@/components/places/report-button";
 import { VisitButton } from "@/components/places/visit-button";
@@ -71,6 +72,16 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
         include: {
           user: { select: { id: true, name: true, image: true } },
           images: { select: { id: true, url: true, alt: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      questions: {
+        include: {
+          user: { select: { id: true, name: true, image: true } },
+          answers: {
+            include: { user: { select: { id: true, name: true, image: true } } },
+            orderBy: { createdAt: "asc" },
+          },
         },
         orderBy: { createdAt: "desc" },
       },
@@ -290,6 +301,11 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
             <Separator />
             <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-muted" />}>
               <ReviewSection place={place} session={session} userReview={userReview ?? null} />
+            </Suspense>
+
+            <Separator />
+            <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-muted" />}>
+              <QASection placeId={place.id} questions={place.questions} session={session} />
             </Suspense>
           </div>
 
