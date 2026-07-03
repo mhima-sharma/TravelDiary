@@ -1,3 +1,5 @@
+import { callExternalApi } from "@/lib/ai/api-client";
+
 const BASE_URL = "https://countriesnow.space/api/v0.1";
 /** Countries/states/cities are effectively static reference data */
 const REVALIDATE_SECONDS = 60 * 60 * 24;
@@ -41,19 +43,31 @@ interface CountriesNowCitiesResponse {
 }
 
 export async function fetchCountries(): Promise<string[]> {
-  const json = await getJson<{ error: boolean; data: CountriesNowPosition[] }>("/countries/positions");
-  if (json.error) throw new CountriesNowError("Failed to fetch countries");
-  return [...new Set(json.data.map((c) => c.name))].sort((a, b) => a.localeCompare(b));
+  const result = await callExternalApi("COUNTRIES_NOW", "countries/positions", null, null, async () => {
+    const json = await getJson<{ error: boolean; data: CountriesNowPosition[] }>("/countries/positions");
+    if (json.error) throw new CountriesNowError("Failed to fetch countries");
+    return [...new Set(json.data.map((c) => c.name))].sort((a, b) => a.localeCompare(b));
+  });
+  if (!result.ok) throw new CountriesNowError(result.message);
+  return result.data;
 }
 
 export async function fetchStates(country: string): Promise<string[]> {
-  const json = await postJson<CountriesNowStatesResponse>("/countries/states", { country });
-  if (json.error) throw new CountriesNowError(json.msg ?? `Failed to fetch states for ${country}`);
-  return json.data.states.map((s) => s.name).sort((a, b) => a.localeCompare(b));
+  const result = await callExternalApi("COUNTRIES_NOW", "countries/states", null, null, async () => {
+    const json = await postJson<CountriesNowStatesResponse>("/countries/states", { country });
+    if (json.error) throw new CountriesNowError(json.msg ?? `Failed to fetch states for ${country}`);
+    return json.data.states.map((s) => s.name).sort((a, b) => a.localeCompare(b));
+  });
+  if (!result.ok) throw new CountriesNowError(result.message);
+  return result.data;
 }
 
 export async function fetchCities(country: string, state: string): Promise<string[]> {
-  const json = await postJson<CountriesNowCitiesResponse>("/countries/state/cities", { country, state });
-  if (json.error) throw new CountriesNowError(json.msg ?? `Failed to fetch cities for ${state}, ${country}`);
-  return [...json.data].sort((a, b) => a.localeCompare(b));
+  const result = await callExternalApi("COUNTRIES_NOW", "countries/state/cities", null, null, async () => {
+    const json = await postJson<CountriesNowCitiesResponse>("/countries/state/cities", { country, state });
+    if (json.error) throw new CountriesNowError(json.msg ?? `Failed to fetch cities for ${state}, ${country}`);
+    return [...json.data].sort((a, b) => a.localeCompare(b));
+  });
+  if (!result.ok) throw new CountriesNowError(result.message);
+  return result.data;
 }

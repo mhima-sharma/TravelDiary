@@ -390,6 +390,110 @@ model Report {
   @@map("reports")
 }
 
+// ─── AI Features ────────────────────────────────────────────────────────────
+
+enum ApiServiceKey {
+  GEMINI
+  GEOAPIFY
+  OPEN_METEO
+  OSRM
+  COUNTRIES_NOW
+}
+
+enum ApiServiceStatus {
+  ONLINE
+  OFFLINE
+  DEGRADED
+  UNKNOWN
+}
+
+enum AutoDisabledCause {
+  FAILURES
+  DAILY_LIMIT
+  MONTHLY_LIMIT
+}
+
+enum AiFeature {
+  TRIP_PLANNER
+  CHATBOT
+}
+
+model AiSettings {
+  id                      String   @id @default("global")
+  tripPlannerEnabled      Boolean  @default(true)
+  chatbotEnabled          Boolean  @default(true)
+  unavailableMessage      String   @db.Text
+  cacheEnabled            Boolean  @default(true)
+  cacheDurationDays       Int      @default(30)
+  totalCacheHits          Int      @default(0)
+  totalCacheMisses        Int      @default(0)
+  totalForceRegenerations Int      @default(0)
+  updatedAt               DateTime @updatedAt
+
+  @@map("ai_settings")
+}
+
+model ApiService {
+  id                  String             @id @default(cuid())
+  key                 ApiServiceKey      @unique
+  name                String
+  enabled             Boolean            @default(true)
+  autoDisabled        Boolean            @default(false)
+  autoDisabledReason  String?            @db.Text
+  autoDisabledCause   AutoDisabledCause?
+  status              ApiServiceStatus   @default(UNKNOWN)
+  dailyLimit          Int?
+  monthlyLimit        Int?
+  warningThresholdPct Int                @default(80)
+  maintenanceMessage  String?            @db.Text
+  consecutiveFailures Int                @default(0)
+  lastError           String?            @db.Text
+  lastErrorAt         DateTime?
+  lastSuccessAt       DateTime?
+  lastCheckedAt       DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@map("api_services")
+}
+
+model ApiRequestLog {
+  id           String        @id @default(cuid())
+  service      ApiServiceKey
+  endpoint     String
+  feature      AiFeature?
+  success      Boolean
+  statusCode   Int?
+  errorMessage String?       @db.Text
+  userId       String?
+  createdAt    DateTime      @default(now())
+
+  @@index([service, createdAt])
+  @@index([service, success])
+  @@map("api_request_logs")
+}
+
+model AiItineraryCache {
+  id               String   @id @default(cuid())
+  originalPrompt   String   @db.Text
+  normalizedPrompt String   @db.Text
+  promptHash       String   @unique
+  destination      String?
+  duration         Int?
+  budget           Int?
+  destinationLat   Float?
+  destinationLon   Float?
+  response         String   @db.LongText
+  userId           String?
+  accessCount      Int      @default(1)
+  createdAt        DateTime @default(now())
+  lastAccessedAt   DateTime @default(now())
+  expiresAt        DateTime
+
+  @@index([expiresAt])
+  @@map("ai_itinerary_cache")
+}
+
 // ─── Gamification ──────────────────────────────────────────────────────────
 
 model UserStats {

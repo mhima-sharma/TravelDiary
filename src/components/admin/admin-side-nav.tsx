@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, MapPin, FolderOpen, Star, Flag, BarChart3, Gift, Megaphone } from "lucide-react";
+import { LayoutDashboard, Users, MapPin, FolderOpen, Star, Flag, BarChart3, Gift, Megaphone, Bot } from "lucide-react";
 
 export const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -14,6 +14,7 @@ export const adminLinks = [
   { href: "/admin/reports", label: "Reports", icon: Flag },
   { href: "/admin/rewards", label: "Rewards", icon: Gift },
   { href: "/admin/ads", label: "Ads", icon: Megaphone },
+  { href: "/admin/ai-services", label: "AI Services", icon: Bot },
 ];
 
 export function AdminSideNav() {

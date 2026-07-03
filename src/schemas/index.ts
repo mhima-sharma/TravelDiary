@@ -112,6 +112,38 @@ export const RedemptionSchema = z.object({
   deliveryInstructions: z.string().max(500).optional(),
 });
 
+export const TripPlannerSchema = z.object({
+  prompt: z.string().min(10, "Tell us a bit more about your trip").max(500, "Keep it under 500 characters"),
+});
+
+export const AiSettingsSchema = z.object({
+  tripPlannerEnabled: z.boolean(),
+  chatbotEnabled: z.boolean(),
+  unavailableMessage: z.string().min(1).max(500),
+  cacheEnabled: z.boolean(),
+  cacheDurationDays: z.number().int().min(1).max(365),
+});
+
+export const ApiServiceSchema = z.object({
+  enabled: z.boolean(),
+  dailyLimit: z.number().int().min(1).optional().nullable(),
+  monthlyLimit: z.number().int().min(1).optional().nullable(),
+  warningThresholdPct: z.number().int().min(1).max(100),
+  maintenanceMessage: z.string().max(500).optional().nullable(),
+});
+
+export const ChatMessageSchema = z.object({
+  message: z.string().min(1, "Message can't be empty").max(1000),
+  history: z
+    .array(
+      z.object({
+        role: z.enum(["user", "model"]),
+        content: z.string(),
+      })
+    )
+    .max(20),
+});
+
 export type LoginInput = z.infer<typeof LoginSchema>;
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 export type PlaceInput = z.infer<typeof PlaceSchema>;
@@ -120,3 +152,7 @@ export type QuestionInput = z.infer<typeof QuestionSchema>;
 export type AnswerInput = z.infer<typeof AnswerSchema>;
 export type ProfileInput = z.infer<typeof ProfileSchema>;
 export type CategoryInput = z.infer<typeof CategorySchema>;
+export type TripPlannerInput = z.infer<typeof TripPlannerSchema>;
+export type AiSettingsInput = z.infer<typeof AiSettingsSchema>;
+export type ApiServiceInput = z.infer<typeof ApiServiceSchema>;
+export type ChatMessageInput = z.infer<typeof ChatMessageSchema>;

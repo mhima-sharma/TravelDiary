@@ -11,6 +11,8 @@ import { NavigationProgress } from "@/components/shared/navigation-progress";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { getAiSettings } from "@/lib/ai/settings";
+import { ChatbotWidget } from "@/components/shared/chatbot-widget";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -74,6 +76,7 @@ const organizationJsonLd = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
+  const aiSettings = await getAiSettings();
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -87,6 +90,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <PWARegister />
             <PageTracker />
             {children}
+            {aiSettings.chatbotEnabled && <ChatbotWidget />}
             <Toaster position="top-right" richColors />
             <Analytics />
             <SpeedInsights />
