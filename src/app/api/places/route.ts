@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { PlaceStatus } from "@prisma/client";
 import { getStateAliases } from "@/lib/map/india-states";
+import { buildPlaceSearchWhere } from "@/lib/search/place-search";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -14,11 +15,10 @@ export async function GET(req: NextRequest) {
   const skip = (page - 1) * take;
 
   const where: Record<string, unknown> = { status: PlaceStatus.APPROVED };
-  if (q) where.OR = [
-    { title: { contains: q } },
-    { city: { contains: q } },
-    { state: { contains: q } },
-  ];
+  if (q) {
+    const searchWhere = buildPlaceSearchWhere(q);
+    if (searchWhere) Object.assign(where, searchWhere);
+  }
   if (category) where.category = { slug: category };
   if (state) where.state = { in: getStateAliases(state.trim()) };
   if (country) where.country = { contains: country.trim() };

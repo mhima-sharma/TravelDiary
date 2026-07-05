@@ -21,6 +21,7 @@ import { Search, Map, MapPin } from "lucide-react";
 import { BackButton } from "@/components/shared/back-button";
 import { NearMeButton } from "@/components/places/near-me-button";
 import { LocationFilterFields } from "@/components/places/location-filter-fields";
+import { buildPlaceSearchWhere } from "@/lib/search/place-search";
 import type { SearchParams } from "@/types";
 import type { Metadata } from "next";
 
@@ -61,12 +62,10 @@ async function PlacesList({ searchParams }: { searchParams: SearchParams }) {
   const skip = (pageNum - 1) * take;
 
   const where: Record<string, unknown> = { status: PlaceStatus.APPROVED };
-  if (q) where.OR = [
-    { title: { contains: q } },
-    { city: { contains: q } },
-    { state: { contains: q } },
-    { country: { contains: q } },
-  ];
+  if (q) {
+    const searchWhere = buildPlaceSearchWhere(q);
+    if (searchWhere) Object.assign(where, searchWhere);
+  }
   if (category) where.category = { slug: category };
   if (city) where.city = { contains: city };
   if (state) where.state = { contains: state };
