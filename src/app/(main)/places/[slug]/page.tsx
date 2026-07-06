@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: place.title,
     description: place.shortDescription,
     openGraph: {
-      title: `${place.title} | TravelDiary`,
+      title: `${place.title} | Tripzify`,
       description: place.shortDescription,
       images: place.featuredImage ? [{ url: place.featuredImage }] : [],
     },

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { Sun, Moon, Menu, X, Plus, User, LogOut, LayoutDashboard, Shield } from "lucide-react";
-import { TravelDiaryIcon } from "@/components/shared/travel-diary-icon";
+import { TripzifyIcon } from "@/components/shared/tripzify-icon";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -31,8 +31,8 @@ export function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-            <TravelDiaryIcon className="h-8 w-8" />
-            <span>TravelDiary</span>
+            <TripzifyIcon className="h-8 w-8" />
+            <span>Tripzify</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">

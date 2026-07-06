@@ -25,7 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
             <Compass className="h-5 w-5" />
-            TravelDiary
+            Tripzify
           </Link>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Link href="/" className="flex items-center gap-1.5 hover:text-foreground transition-colors">

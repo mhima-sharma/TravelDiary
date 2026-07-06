@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
   const { username } = await params;
   const data = await getUserProfileData(username);
   if (!data) return { title: "User not found" };
-  return { title: `${data.user.name} — TravelDiary`, description: data.user.bio ?? undefined };
+  return { title: `${data.user.name} — Tripzify`, description: data.user.bio ?? undefined };
 }
 
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {

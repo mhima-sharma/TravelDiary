@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <AdminMobileNav />
           <Shield className="h-5 w-5 text-primary hidden md:block" />
           <span className="font-semibold">Admin Panel</span>
-          <span className="text-muted-foreground text-sm ml-2">TravelDiary</span>
+          <span className="text-muted-foreground text-sm ml-2">Tripzify</span>
         </div>
       </header>
       <div className="container mx-auto px-4 py-6 flex gap-6">

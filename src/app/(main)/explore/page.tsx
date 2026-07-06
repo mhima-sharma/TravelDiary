@@ -43,13 +43,13 @@ export const metadata: Metadata = {
   title: "Explore Places",
   description: "Discover amazing travel destinations – hill stations, beaches, temples, wildlife and more across India and the world.",
   openGraph: {
-    title: "Explore Places | TravelDiary",
+    title: "Explore Places | Tripzify",
     description: "Discover amazing travel destinations – hill stations, beaches, temples, wildlife and more.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Explore Places on TravelDiary" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Explore Places on Tripzify" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Explore Places | TravelDiary",
+    title: "Explore Places | Tripzify",
     description: "Discover amazing travel destinations – hill stations, beaches, temples, wildlife and more.",
     images: ["/og-image.png"],
   },

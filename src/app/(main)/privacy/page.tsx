@@ -3,7 +3,7 @@ import { Shield, Eye, Lock, Database } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "Learn how TravelDiary collects, uses, and protects your personal information.",
+  description: "Learn how Tripzify collects, uses, and protects your personal information.",
 };
 
 export default function PrivacyPage() {
@@ -49,14 +49,14 @@ export default function PrivacyPage() {
         <p>When you add a place or write a review, we store the content, images, ratings, and associated metadata (city, state, country, coordinates) that you provide.</p>
 
         <h3>Usage Data</h3>
-        <p>We collect anonymised page view data including the page path, device type, and country to understand how people use TravelDiary. We hash IP addresses so individual users cannot be identified from analytics data.</p>
+        <p>We collect anonymised page view data including the page path, device type, and country to understand how people use Tripzify. We hash IP addresses so individual users cannot be identified from analytics data.</p>
 
         <h3>Images</h3>
         <p>Photos you upload are stored on Cloudinary, our image hosting partner. We store the image URL and public ID in our database. Please refer to <a href="https://cloudinary.com/privacy" target="_blank" rel="noopener noreferrer">Cloudinary's Privacy Policy</a> for details on how they handle images.</p>
 
         <h2>2. How We Use Your Information</h2>
         <ul>
-          <li>To operate and improve the TravelDiary platform</li>
+          <li>To operate and improve the Tripzify platform</li>
           <li>To display your submitted places and reviews to other users</li>
           <li>To send account-related emails (verification, password reset)</li>
           <li>To moderate content and enforce our Content Policy</li>
@@ -64,7 +64,7 @@ export default function PrivacyPage() {
         </ul>
 
         <h2>3. Third-Party Services</h2>
-        <p>TravelDiary uses the following third-party services:</p>
+        <p>Tripzify uses the following third-party services:</p>
         <ul>
           <li><strong>Google OAuth</strong> — for "Sign in with Google". Google's Privacy Policy applies.</li>
           <li><strong>Cloudinary</strong> — for image storage and delivery.</li>
@@ -87,10 +87,10 @@ export default function PrivacyPage() {
         </ul>
 
         <h2>7. Children's Privacy</h2>
-        <p>TravelDiary is not intended for children under 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal data, please contact us and we will delete it promptly.</p>
+        <p>Tripzify is not intended for children under 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal data, please contact us and we will delete it promptly.</p>
 
         <h2>8. Changes to This Policy</h2>
-        <p>We may update this Privacy Policy from time to time. We will notify registered users by email of any significant changes. Continued use of TravelDiary after changes constitutes acceptance of the updated policy.</p>
+        <p>We may update this Privacy Policy from time to time. We will notify registered users by email of any significant changes. Continued use of Tripzify after changes constitutes acceptance of the updated policy.</p>
 
         <h2>9. Contact Us</h2>
         <p>If you have any questions about this Privacy Policy or how we handle your data, please reach out via our <a href="/contact">Contact page</a>.</p>

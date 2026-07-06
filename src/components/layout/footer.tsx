@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TravelDiaryIcon } from "@/components/shared/travel-diary-icon";
+import { TripzifyIcon } from "@/components/shared/tripzify-icon";
 
 const links = {
   Explore: [
@@ -27,8 +27,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-              <TravelDiaryIcon className="h-7 w-7" />
-              TravelDiary
+              <TripzifyIcon className="h-7 w-7" />
+              Tripzify
             </Link>
             <p className="text-sm text-muted-foreground">
               Discover incredible places and share your travel experiences with the world.
@@ -50,7 +50,7 @@ export function Footer() {
           ))}
         </div>
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} TravelDiary. All rights reserved.
+          © {new Date().getFullYear()} Tripzify. All rights reserved.
         </div>
       </div>
     </footer>

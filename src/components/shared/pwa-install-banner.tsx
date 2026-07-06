@@ -88,7 +88,7 @@ export function PWAInstallBanner() {
         {/* Text */}
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm leading-tight">
-            Install TravelDiary
+            Install Tripzify
           </p>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
             {platform === "ios"

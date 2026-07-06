@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const dataUri = `data:image/webp;base64,${compressed.toString("base64")}`;
 
   const result = await cloudinary.uploader.upload(dataUri, {
-    folder: "travel_diary",
+    folder: "tripzify",
     resource_type: "image",
     // Cloudinary re-encodes with auto quality + serves WebP/AVIF to browsers that support it
     transformation: [

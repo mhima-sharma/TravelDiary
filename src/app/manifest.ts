@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "TravelDiary – Discover Amazing Places",
-    short_name: "TravelDiary",
+    name: "Tripzify – Discover Amazing Places",
+    short_name: "Tripzify",
     description:
       "Explore thousands of incredible travel destinations. Discover hill stations, beaches, temples, and hidden gems.",
     start_url: "/",

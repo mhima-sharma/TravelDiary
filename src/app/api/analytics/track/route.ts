@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { createHash } from "crypto";
 
 function hashIp(ip: string): string {
-  const salt = process.env.NEXTAUTH_SECRET ?? "traveldiary-salt";
+  const salt = process.env.NEXTAUTH_SECRET ?? "tripzify-salt";
   return createHash("sha256").update(ip + salt).digest("hex").slice(0, 16);
 }
 

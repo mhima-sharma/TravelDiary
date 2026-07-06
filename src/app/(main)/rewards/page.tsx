@@ -58,7 +58,7 @@ export default function RewardsPage() {
         <div className="text-5xl mb-3">🌱</div>
         <h1 className="text-4xl font-bold mb-2">Rewards</h1>
         <p className="text-muted-foreground text-lg">
-          Earn coins by contributing to TravelDiary and redeem them for real rewards.
+          Earn coins by contributing to Tripzify and redeem them for real rewards.
         </p>
       </div>
 

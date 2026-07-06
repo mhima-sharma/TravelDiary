@@ -1,7 +1,7 @@
 const CACHE_VERSION = "v1";
-const STATIC_CACHE = `traveldiary-static-${CACHE_VERSION}`;
-const IMAGE_CACHE = `traveldiary-images-${CACHE_VERSION}`;
-const PAGE_CACHE = `traveldiary-pages-${CACHE_VERSION}`;
+const STATIC_CACHE = `tripzify-static-${CACHE_VERSION}`;
+const IMAGE_CACHE = `tripzify-images-${CACHE_VERSION}`;
+const PAGE_CACHE = `tripzify-pages-${CACHE_VERSION}`;
 const ALL_CACHES = [STATIC_CACHE, IMAGE_CACHE, PAGE_CACHE];
 
 const OFFLINE_URL = "/offline";

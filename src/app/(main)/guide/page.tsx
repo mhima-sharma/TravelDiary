@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "How It Works — TravelDiary",
-  description: "Learn how to contribute places, earn XP and coins, unlock badges, level up, and redeem rewards on TravelDiary.",
+  title: "How It Works — Tripzify",
+  description: "Learn how to contribute places, earn XP and coins, unlock badges, level up, and redeem rewards on Tripzify.",
 };
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ export default function GuidePage() {
             Earn real rewards.
           </h1>
           <p className="text-lg text-white/65 max-w-xl mb-8 leading-relaxed">
-            TravelDiary is a community-driven platform where your contributions unlock XP, coins, badges, and physical rewards.
+            Tripzify is a community-driven platform where your contributions unlock XP, coins, badges, and physical rewards.
             This guide explains everything.
           </p>
           <div className="flex flex-wrap gap-3">

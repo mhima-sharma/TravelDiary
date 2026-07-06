@@ -10,16 +10,16 @@ import { Trophy, Zap, Coins, Medal } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Leaderboard",
-  description: "Top contributors on TravelDiary – see who has discovered and shared the most amazing places.",
+  description: "Top contributors on Tripzify – see who has discovered and shared the most amazing places.",
   openGraph: {
-    title: "Leaderboard | TravelDiary",
-    description: "Top contributors on TravelDiary – see who has discovered and shared the most amazing places.",
+    title: "Leaderboard | Tripzify",
+    description: "Top contributors on Tripzify – see who has discovered and shared the most amazing places.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Leaderboard | TravelDiary",
-    description: "Top contributors on TravelDiary – see who has discovered and shared the most amazing places.",
+    title: "Leaderboard | Tripzify",
+    description: "Top contributors on Tripzify – see who has discovered and shared the most amazing places.",
   },
 };
 export const revalidate = 300;

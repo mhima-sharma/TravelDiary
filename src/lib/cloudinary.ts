@@ -8,7 +8,7 @@ cloudinary.config({
 
 export async function uploadImage(
   file: string,
-  folder = "travel_diary"
+  folder = "tripzify"
 ): Promise<{ url: string; publicId: string }> {
   const result = await cloudinary.uploader.upload(file, {
     folder,

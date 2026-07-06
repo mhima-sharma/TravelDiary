@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const post = await db.post.findUnique({ where: { slug, status: PostStatus.PUBLISHED } });
   if (!post) return { title: "Post Not Found" };
   return {
-    title: `${post.title} | TravelDiary Blog`,
+    title: `${post.title} | Tripzify Blog`,
     description: post.excerpt,
     alternates: { canonical: `${process.env.NEXT_PUBLIC_APP_URL}/blog/${post.slug}` },
     openGraph: {
@@ -78,7 +78,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     image: post.featuredImage ?? undefined,
     author: { "@type": "Person", name: post.author.name },
     datePublished: post.publishedAt?.toISOString(),
-    publisher: { "@type": "Organization", name: "TravelDiary", url: process.env.NEXT_PUBLIC_APP_URL },
+    publisher: { "@type": "Organization", name: "Tripzify", url: process.env.NEXT_PUBLIC_APP_URL },
     mainEntityOfPage: { "@type": "WebPage", "@id": `${process.env.NEXT_PUBLIC_APP_URL}/blog/${post.slug}` },
   };
 

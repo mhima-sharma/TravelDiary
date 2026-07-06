@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${cat.name} Places`,
     description: cat.description || `Explore ${cat.name} destinations`,
-    openGraph: { title: `${cat.name} | TravelDiary`, description: cat.description || "" },
+    openGraph: { title: `${cat.name} | Tripzify`, description: cat.description || "" },
   };
 }
 

@@ -24,10 +24,10 @@ export async function sendVerificationEmail(email: string, token: string) {
   await transporter.sendMail({
     from: process.env.SMTP_FROM,
     to: email,
-    subject: "Verify your TravelDiary account",
+    subject: "Verify your Tripzify account",
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto">
-        <h2>Welcome to TravelDiary!</h2>
+        <h2>Welcome to Tripzify!</h2>
         <p>Click the button below to verify your email address:</p>
         <a href="${url}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:white;border-radius:8px;text-decoration:none">Verify Email</a>
         <p style="margin-top:16px;color:#6b7280">This link expires in 24 hours.</p>
@@ -64,7 +64,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   await transporter.sendMail({
     from: process.env.SMTP_FROM,
     to: email,
-    subject: "Reset your TravelDiary password",
+    subject: "Reset your Tripzify password",
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto">
         <h2>Password Reset</h2>

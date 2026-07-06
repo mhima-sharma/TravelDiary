@@ -16,7 +16,7 @@ export default async function NewPlacePage() {
     <div className="container mx-auto px-4 py-10 max-w-3xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Add a New Place</h1>
-        <p className="text-muted-foreground mt-2">Share a destination with the TravelDiary community. It will be reviewed before going live.</p>
+        <p className="text-muted-foreground mt-2">Share a destination with the Tripzify community. It will be reviewed before going live.</p>
       </div>
       <PlaceForm categories={categories} />
     </div>

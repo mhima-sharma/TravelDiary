@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <header className="border-b p-4">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg w-fit">
           <MapPin className="h-5 w-5 text-primary" />
-          TravelDiary
+          Tripzify
         </Link>
       </header>
       <main className="flex-1 flex items-center justify-center p-4 bg-muted/30">

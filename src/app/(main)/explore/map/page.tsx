@@ -6,9 +6,9 @@ export const metadata: Metadata = {
   title: "Explore by Map",
   description: "Browse travel destinations visually — select India to explore its states, or any other country to see places there.",
   openGraph: {
-    title: "Explore by Map | TravelDiary",
+    title: "Explore by Map | Tripzify",
     description: "Browse travel destinations visually on an interactive world map.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Explore by Map on TravelDiary" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Explore by Map on Tripzify" }],
   },
 };
 

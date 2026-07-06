@@ -18,25 +18,25 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "TravelDiary – Discover Amazing Places",
-    template: "%s | TravelDiary",
+    default: "Tripzify – Discover Amazing Places",
+    template: "%s | Tripzify",
   },
   description:
     "Explore thousands of incredible travel destinations. Discover hill stations, beaches, temples, and hidden gems across India and the world.",
-  keywords: ["travel", "destinations", "places", "tourism", "travel diary"],
-  authors: [{ name: "TravelDiary" }],
+  keywords: ["travel", "destinations", "places", "tourism", "tripzify"],
+  authors: [{ name: "Tripzify" }],
   openGraph: {
     type: "website",
     locale: "en_US",
     url: process.env.NEXT_PUBLIC_APP_URL,
-    siteName: "TravelDiary",
-    title: "TravelDiary – Discover Amazing Places",
+    siteName: "Tripzify",
+    title: "Tripzify – Discover Amazing Places",
     description: "Explore thousands of incredible travel destinations.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "TravelDiary" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Tripzify" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TravelDiary – Discover Amazing Places",
+    title: "Tripzify – Discover Amazing Places",
     description: "Explore thousands of incredible travel destinations.",
     images: ["/og-image.png"],
   },
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "TravelDiary",
+    title: "Tripzify",
   },
   robots: { index: true, follow: true },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
@@ -68,7 +68,7 @@ export const viewport: Viewport = {
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "TravelDiary",
+  name: "Tripzify",
   url: process.env.NEXT_PUBLIC_APP_URL,
   description: "Explore thousands of incredible travel destinations across India and the world.",
   sameAs: [],

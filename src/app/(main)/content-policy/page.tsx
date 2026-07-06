@@ -3,7 +3,7 @@ import { CheckCircle, XCircle, Flag, ImageIcon } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Content Policy",
-  description: "TravelDiary's Content Policy — what's allowed, what isn't, and how we keep the community trustworthy.",
+  description: "Tripzify's Content Policy — what's allowed, what isn't, and how we keep the community trustworthy.",
 };
 
 export default function ContentPolicyPage() {
@@ -17,7 +17,7 @@ export default function ContentPolicyPage() {
         </div>
         <h1 className="text-4xl font-bold mb-4">Content Policy</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          TravelDiary is built on trust. This policy defines what content is welcome on the platform and what will be removed.
+          Tripzify is built on trust. This policy defines what content is welcome on the platform and what will be removed.
         </p>
         <p className="text-sm text-muted-foreground mt-4">Last updated: June 2025</p>
       </div>
@@ -42,7 +42,7 @@ export default function ContentPolicyPage() {
 
       <div className="prose prose-lg dark:prose-invert mx-auto">
         <h2>1. Our Standard</h2>
-        <p>TravelDiary exists to help people discover real places and plan authentic travel experiences. Every piece of content on the platform should serve that purpose. If it doesn't help a traveller — it doesn't belong here.</p>
+        <p>Tripzify exists to help people discover real places and plan authentic travel experiences. Every piece of content on the platform should serve that purpose. If it doesn't help a traveller — it doesn't belong here.</p>
 
         <h2>2. Submitting Places</h2>
         <h3>What makes a good place submission</h3>

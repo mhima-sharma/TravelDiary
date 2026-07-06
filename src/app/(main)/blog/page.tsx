@@ -10,16 +10,16 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Blog",
-  description: "Travel stories, tips, guides and inspiration from the TravelDiary community.",
+  description: "Travel stories, tips, guides and inspiration from the Tripzify community.",
   openGraph: {
-    title: "Blog | TravelDiary",
-    description: "Travel stories, tips, guides and inspiration from the TravelDiary community.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "TravelDiary Blog" }],
+    title: "Blog | Tripzify",
+    description: "Travel stories, tips, guides and inspiration from the Tripzify community.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Tripzify Blog" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Blog | TravelDiary",
-    description: "Travel stories, tips, guides and inspiration from the TravelDiary community.",
+    title: "Blog | Tripzify",
+    description: "Travel stories, tips, guides and inspiration from the Tripzify community.",
     images: ["/og-image.png"],
   },
 };

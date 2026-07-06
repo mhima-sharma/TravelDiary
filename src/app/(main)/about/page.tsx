@@ -3,16 +3,16 @@ import { MapPin, Users, Star, Globe } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About Us",
-  description: "Learn about TravelDiary and our mission to connect travelers worldwide and help people discover amazing places.",
+  description: "Learn about Tripzify and our mission to connect travelers worldwide and help people discover amazing places.",
   openGraph: {
-    title: "About Us | TravelDiary",
-    description: "Learn about TravelDiary and our mission to connect travelers worldwide.",
+    title: "About Us | Tripzify",
+    description: "Learn about Tripzify and our mission to connect travelers worldwide.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "About Us | TravelDiary",
-    description: "Learn about TravelDiary and our mission to connect travelers worldwide.",
+    title: "About Us | Tripzify",
+    description: "Learn about Tripzify and our mission to connect travelers worldwide.",
   },
 };
 
@@ -25,7 +25,7 @@ export default function AboutPage() {
             <MapPin className="h-10 w-10 text-primary" />
           </div>
         </div>
-        <h1 className="text-4xl font-bold mb-4">About TravelDiary</h1>
+        <h1 className="text-4xl font-bold mb-4">About Tripzify</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           We're building the world's most trusted community platform for travel discovery — powered by real experiences from real travelers.
         </p>
@@ -51,7 +51,7 @@ export default function AboutPage() {
 
       <div className="prose prose-lg dark:prose-invert mx-auto">
         <h2>How It Works</h2>
-        <p>TravelDiary is a community-driven platform. Anyone can browse and discover incredible destinations without creating an account. When you're ready to contribute, create a free account and start sharing your favourite places with the world.</p>
+        <p>Tripzify is a community-driven platform. Anyone can browse and discover incredible destinations without creating an account. When you're ready to contribute, create a free account and start sharing your favourite places with the world.</p>
         <p>Every submission goes through a quick review process to maintain quality. Once approved, your place becomes discoverable by millions of travelers seeking their next adventure.</p>
       </div>
     </div>

@@ -44,7 +44,7 @@ export default function LoginPage() {
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your TravelDiary account</CardDescription>
+        <CardDescription>Sign in to your Tripzify account</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Google Sign-In temporarily disabled
