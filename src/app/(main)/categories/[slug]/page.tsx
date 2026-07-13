@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { PlaceStatus } from "@prisma/client";
@@ -6,9 +7,33 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Map } from "lucide-react";
 import type { Metadata } from "next";
 
+export const revalidate = 300;
+
+const PLACES_PAGE_SIZE = 24;
+
+const getCategory = cache((slug: string) =>
+  db.category.findUnique({
+    where: { slug },
+    include: {
+      places: {
+        where: { status: PlaceStatus.APPROVED },
+        take: PLACES_PAGE_SIZE,
+        include: {
+          category: { select: { name: true, slug: true, icon: true } },
+          user: { select: { id: true, name: true, image: true } },
+          images: { select: { id: true, url: true, alt: true }, take: 1 },
+          _count: { select: { reviews: true, favorites: true } },
+        },
+        orderBy: { averageRating: "desc" },
+      },
+      _count: { select: { places: { where: { status: PlaceStatus.APPROVED } } } },
+    },
+  })
+);
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const cat = await db.category.findUnique({ where: { slug } });
+  const cat = await getCategory(slug);
   if (!cat) return { title: "Category Not Found" };
   return {
     title: `${cat.name} Places`,
@@ -19,21 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const category = await db.category.findUnique({
-    where: { slug },
-    include: {
-      places: {
-        where: { status: PlaceStatus.APPROVED },
-        include: {
-          category: { select: { name: true, slug: true, icon: true } },
-          user: { select: { id: true, name: true, image: true } },
-          images: { select: { id: true, url: true, alt: true }, take: 1 },
-          _count: { select: { reviews: true, favorites: true } },
-        },
-        orderBy: { averageRating: "desc" },
-      },
-    },
-  });
+  const category = await getCategory(slug);
 
   if (!category) notFound();
 
@@ -47,7 +58,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
             {category.description && <p className="text-muted-foreground mt-1 text-lg">{category.description}</p>}
           </div>
         </div>
-        <p className="text-muted-foreground">{category.places.length} places in this category</p>
+        <p className="text-muted-foreground">{category._count.places} places in this category</p>
       </div>
 
       {category.places.length === 0 ? (

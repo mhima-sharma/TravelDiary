@@ -29,10 +29,46 @@ import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 import { PlaceStatus } from "@prisma/client";
 
+export const revalidate = 300;
+
 const getActiveAds = unstable_cache(
   () => db.advertisement.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" } }),
   ["active-ads"],
   { revalidate: 300, tags: ["ads"] }
+);
+
+const getFeaturedPlaces = unstable_cache(
+  () =>
+    db.place.findMany({
+      where: { status: PlaceStatus.APPROVED },
+      orderBy: { averageRating: "desc" },
+      take: 6,
+      include: {
+        category: { select: { name: true, slug: true, icon: true } },
+        user: { select: { id: true, name: true, image: true } },
+        images: { select: { id: true, url: true, alt: true }, take: 1 },
+        _count: { select: { reviews: true, favorites: true } },
+      },
+    }),
+  ["featured-places"],
+  { revalidate: 300, tags: ["places"] }
+);
+
+const getRecentPlaces = unstable_cache(
+  () =>
+    db.place.findMany({
+      where: { status: PlaceStatus.APPROVED },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      include: {
+        category: { select: { name: true, slug: true, icon: true } },
+        user: { select: { id: true, name: true, image: true } },
+        images: { select: { id: true, url: true, alt: true }, take: 1 },
+        _count: { select: { reviews: true, favorites: true } },
+      },
+    }),
+  ["recent-places"],
+  { revalidate: 300, tags: ["places"] }
 );
 
 const categories = [
@@ -45,17 +81,7 @@ const categories = [
 ];
 
 async function FeaturedPlaces() {
-  const places = await db.place.findMany({
-    where: { status: PlaceStatus.APPROVED },
-    orderBy: { averageRating: "desc" },
-    take: 6,
-    include: {
-      category: { select: { name: true, slug: true, icon: true } },
-      user: { select: { id: true, name: true, image: true } },
-      images: { select: { id: true, url: true, alt: true }, take: 1 },
-      _count: { select: { reviews: true, favorites: true } },
-    },
-  });
+  const places = await getFeaturedPlaces();
 
   if (places.length === 0) {
     return (
@@ -73,17 +99,7 @@ async function FeaturedPlaces() {
 }
 
 async function RecentPlaces() {
-  const places = await db.place.findMany({
-    where: { status: PlaceStatus.APPROVED },
-    orderBy: { createdAt: "desc" },
-    take: 3,
-    include: {
-      category: { select: { name: true, slug: true, icon: true } },
-      user: { select: { id: true, name: true, image: true } },
-      images: { select: { id: true, url: true, alt: true }, take: 1 },
-      _count: { select: { reviews: true, favorites: true } },
-    },
-  });
+  const places = await getRecentPlaces();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
