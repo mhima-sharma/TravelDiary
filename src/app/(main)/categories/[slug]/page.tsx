@@ -1,8 +1,10 @@
-import { cache } from "react";
+import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 import { PlaceStatus } from "@prisma/client";
 import { PlaceCard } from "@/components/shared/place-card";
+import { PlaceCardSkeleton } from "@/components/shared/place-card-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Map } from "lucide-react";
 import type { Metadata } from "next";
@@ -15,20 +17,26 @@ const getCategory = cache((slug: string) =>
   db.category.findUnique({
     where: { slug },
     include: {
-      places: {
-        where: { status: PlaceStatus.APPROVED },
-        take: PLACES_PAGE_SIZE,
-        include: {
-          category: { select: { name: true, slug: true, icon: true } },
-          user: { select: { id: true, name: true, image: true } },
-          images: { select: { id: true, url: true, alt: true }, take: 1 },
-          _count: { select: { reviews: true, favorites: true } },
-        },
-        orderBy: { averageRating: "desc" },
-      },
       _count: { select: { places: { where: { status: PlaceStatus.APPROVED } } } },
     },
   })
+);
+
+const getCategoryPlaces = unstable_cache(
+  (slug: string) =>
+    db.place.findMany({
+      where: { status: PlaceStatus.APPROVED, category: { slug } },
+      take: PLACES_PAGE_SIZE,
+      orderBy: { averageRating: "desc" },
+      include: {
+        category: { select: { name: true, slug: true, icon: true } },
+        user: { select: { id: true, name: true, image: true } },
+        images: { select: { id: true, url: true, alt: true }, take: 1 },
+        _count: { select: { reviews: true, favorites: true } },
+      },
+    }),
+  ["category-places"],
+  { revalidate: 300, tags: ["places"] }
 );
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -40,6 +48,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     description: cat.description || `Explore ${cat.name} destinations`,
     openGraph: { title: `${cat.name} | Tripzify`, description: cat.description || "" },
   };
+}
+
+async function CategoryPlaces({ slug, categoryName }: { slug: string; categoryName: string }) {
+  const places = await getCategoryPlaces(slug);
+
+  if (places.length === 0) {
+    return (
+      <EmptyState icon={Map} title="No places yet" description={`No ${categoryName} destinations have been added yet.`} action={{ label: "Add a Place", href: "/places/new" }} />
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {places.map((p, i) => <PlaceCard key={p.id} place={p} priority={i === 0} />)}
+    </div>
+  );
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -61,13 +85,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         <p className="text-muted-foreground">{category._count.places} places in this category</p>
       </div>
 
-      {category.places.length === 0 ? (
-        <EmptyState icon={Map} title="No places yet" description={`No ${category.name} destinations have been added yet.`} action={{ label: "Add a Place", href: "/places/new" }} />
-      ) : (
+      <Suspense fallback={
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {category.places.map((p) => <PlaceCard key={p.id} place={p} />)}
+          {[...Array(6)].map((_, i) => <PlaceCardSkeleton key={i} />)}
         </div>
-      )}
+      }>
+        <CategoryPlaces slug={slug} categoryName={category.name} />
+      </Suspense>
     </div>
   );
 }

@@ -21,9 +21,10 @@ interface PlaceCardProps {
     _count: { reviews: number };
   };
   className?: string;
+  priority?: boolean;
 }
 
-export function PlaceCard({ place, className }: PlaceCardProps) {
+export function PlaceCard({ place, className, priority = false }: PlaceCardProps) {
   return (
     <Link href={`/places/${place.slug}`}>
       <Card className={cn("group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1", className)}>
@@ -32,6 +33,7 @@ export function PlaceCard({ place, className }: PlaceCardProps) {
             src={place.featuredImage || "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800"}
             alt={place.title}
             fill
+            priority={priority}
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
